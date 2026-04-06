@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List
+import os
+import uuid
 
 from app.core.database import get_db
 from app.core.security import get_current_admin
@@ -77,3 +79,30 @@ async def delete_message(
         raise HTTPException(status_code=404, detail="Message not found")
     await db.delete(msg)
     await db.commit()
+
+
+@router.post("/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    admin: User = Depends(get_current_admin),
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+    
+    # Create uploads directory if it doesn't exist
+    upload_dir = "static/uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    # Generate unique filename
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = os.path.join(upload_dir, unique_filename)
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        content = await file.read()
+        buffer.write(content)
+    
+    # Return the URL (assuming static files are served at /static/)
+    file_url = f"/static/uploads/{unique_filename}"
+    return {"url": file_url}

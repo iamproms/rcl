@@ -18,8 +18,8 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
-  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:''});
-  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:''});
+  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});
+  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
@@ -91,7 +91,7 @@ export default function AdminDashboard() {
       if(res.ok){
         const newArticle = await res.json();
         setArticles(prev=>[newArticle,...prev]);
-        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:''});
+        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});
         setShowArticleForm(false);
         setNotification('Article created successfully!');
         setTimeout(()=>setNotification(''),3000);
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
       if(res.ok){
         const newProject = await res.json();
         setProjects(prev=>[newProject,...prev]);
-        setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:''});
+        setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});
         setShowProjectForm(false);
         setNotification('Project created successfully!');
         setTimeout(()=>setNotification(''),3000);
@@ -134,6 +134,48 @@ export default function AdminDashboard() {
   };
 
   const logout = () => {localStorage.removeItem('rcl_token');localStorage.removeItem('rcl_user');router.push('/admin');};
+
+  const uploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+        method: 'POST',
+        headers: {'Authorization': `Bearer ${token()}`},
+        body: formData
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.url;
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (e) {
+      setNotification('File upload failed');
+      setTimeout(() => setNotification(''), 3000);
+      return null;
+    }
+  };
+
+  const handleArticleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = await uploadFile(file);
+      if (url) {
+        setArticleForm(p => ({ ...p, articleImage: url }));
+      }
+    }
+  };
+
+  const handleProjectImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = await uploadFile(file);
+      if (url) {
+        setProjectForm(p => ({ ...p, projectImage: url }));
+      }
+    }
+  };
 
   const navItems = [
     {icon:'📊',label:'Dashboard'},{icon:'📝',label:'Articles'},{icon:'🏗️',label:'Projects'},
@@ -273,8 +315,9 @@ export default function AdminDashboard() {
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Slug</label><input value={articleForm.slug} onChange={e=>setArticleForm(p=>({...p,slug:e.target.value}))} placeholder="url-friendly-slug" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Excerpt</label><textarea value={articleForm.excerpt} onChange={e=>setArticleForm(p=>({...p,excerpt:e.target.value}))} placeholder="Brief summary" rows={2} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={articleForm.author} onChange={e=>setArticleForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Date</label><input type="date" value={articleForm.date} onChange={e=>setArticleForm(p=>({...p,date:e.target.value}))} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={articleForm.category} onChange={e=>setArticleForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technology, Business" /></div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Article Image URL</label><input value={articleForm.articleImage} onChange={e=>setArticleForm(p=>({...p,articleImage:e.target.value}))} placeholder="https://example.com/image.jpg" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Article Image</label><input type="file" accept="image/*" onChange={handleArticleImageChange} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createArticle}>Create Article</button>
@@ -310,8 +353,9 @@ export default function AdminDashboard() {
                   <h3 style={{marginBottom:'16px'}}>Create New Project</h3>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={projectForm.title} onChange={e=>setProjectForm(p=>({...p,title:e.target.value}))} placeholder="Project title" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Client</label><input value={projectForm.client} onChange={e=>setProjectForm(p=>({...p,client:e.target.value}))} placeholder="Client name" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={projectForm.author} onChange={e=>setProjectForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Year</label><input value={projectForm.projectYear} onChange={e=>setProjectForm(p=>({...p,projectYear:e.target.value}))} placeholder="2024" /></div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Image URL</label><input value={projectForm.projectImage} onChange={e=>setProjectForm(p=>({...p,projectImage:e.target.value}))} placeholder="https://example.com/image.jpg" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Image</label><input type="file" accept="image/*" onChange={handleProjectImageChange} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createProject}>Create Project</button>

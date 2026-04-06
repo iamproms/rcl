@@ -18,8 +18,8 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
-  const [projectForm, setProjectForm] = useState({title:'',client:'',description:''});
-  const [articleForm, setArticleForm] = useState({title:'',category:'',content:''});
+  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:''});
+  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:''});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
@@ -73,22 +73,25 @@ export default function AdminDashboard() {
   const createArticle = async () => {
     if(!articleForm.title.trim()) return;
     try {
-      const slug = articleForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = articleForm.slug || articleForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`,{
         method:'POST',
         headers:hdrs(),
         body:JSON.stringify({
           title: articleForm.title,
           slug,
+          excerpt: articleForm.excerpt,
           content: articleForm.content,
+          author: articleForm.author,
           category: articleForm.category || 'General',
+          featured_image: articleForm.articleImage,
           is_published: false
         })
       });
       if(res.ok){
         const newArticle = await res.json();
         setArticles(prev=>[newArticle,...prev]);
-        setArticleForm({title:'',category:'',content:''});
+        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:''});
         setShowArticleForm(false);
         setNotification('Article created successfully!');
         setTimeout(()=>setNotification(''),3000);
@@ -111,14 +114,15 @@ export default function AdminDashboard() {
           slug,
           description: projectForm.description,
           client_name: projectForm.client,
-          completion_year: new Date().getFullYear().toString(),
+          completion_year: projectForm.projectYear || new Date().getFullYear().toString(),
+          featured_image: projectForm.projectImage,
           is_active: true
         })
       });
       if(res.ok){
         const newProject = await res.json();
         setProjects(prev=>[newProject,...prev]);
-        setProjectForm({title:'',client:'',description:''});
+        setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:''});
         setShowProjectForm(false);
         setNotification('Project created successfully!');
         setTimeout(()=>setNotification(''),3000);
@@ -266,7 +270,11 @@ export default function AdminDashboard() {
                 <div className="panel" style={{marginBottom:'20px',padding:'20px'}}>
                   <h3 style={{marginBottom:'16px'}}>Create New Article</h3>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={articleForm.title} onChange={e=>setArticleForm(p=>({...p,title:e.target.value}))} placeholder="Article title" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Slug</label><input value={articleForm.slug} onChange={e=>setArticleForm(p=>({...p,slug:e.target.value}))} placeholder="url-friendly-slug" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Excerpt</label><textarea value={articleForm.excerpt} onChange={e=>setArticleForm(p=>({...p,excerpt:e.target.value}))} placeholder="Brief summary" rows={2} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={articleForm.author} onChange={e=>setArticleForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={articleForm.category} onChange={e=>setArticleForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technology, Business" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Article Image URL</label><input value={articleForm.articleImage} onChange={e=>setArticleForm(p=>({...p,articleImage:e.target.value}))} placeholder="https://example.com/image.jpg" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createArticle}>Create Article</button>
@@ -302,6 +310,8 @@ export default function AdminDashboard() {
                   <h3 style={{marginBottom:'16px'}}>Create New Project</h3>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={projectForm.title} onChange={e=>setProjectForm(p=>({...p,title:e.target.value}))} placeholder="Project title" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Client</label><input value={projectForm.client} onChange={e=>setProjectForm(p=>({...p,client:e.target.value}))} placeholder="Client name" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Year</label><input value={projectForm.projectYear} onChange={e=>setProjectForm(p=>({...p,projectYear:e.target.value}))} placeholder="2024" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Image URL</label><input value={projectForm.projectImage} onChange={e=>setProjectForm(p=>({...p,projectImage:e.target.value}))} placeholder="https://example.com/image.jpg" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createProject}>Create Project</button>

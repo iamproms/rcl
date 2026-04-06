@@ -19,6 +19,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
   const [projectForm, setProjectForm] = useState({title:'',client:'',description:''});
+  const [articleForm, setArticleForm] = useState({title:'',category:'',content:''});
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
@@ -65,6 +68,65 @@ export default function AdminDashboard() {
     if(!confirm('Delete this project?')) return;
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`,{method:'DELETE',headers:hdrs()});
     setProjects(prev=>prev.filter(p=>p.id!==id));
+  };
+
+  const createArticle = async () => {
+    if(!articleForm.title.trim()) return;
+    try {
+      const slug = articleForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`,{
+        method:'POST',
+        headers:hdrs(),
+        body:JSON.stringify({
+          title: articleForm.title,
+          slug,
+          content: articleForm.content,
+          category: articleForm.category || 'General',
+          is_published: false
+        })
+      });
+      if(res.ok){
+        const newArticle = await res.json();
+        setArticles(prev=>[newArticle,...prev]);
+        setArticleForm({title:'',category:'',content:''});
+        setShowArticleForm(false);
+        setNotification('Article created successfully!');
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){
+      setNotification('Failed to create article');
+      setTimeout(()=>setNotification(''),3000);
+    }
+  };
+
+  const createProject = async () => {
+    if(!projectForm.title.trim()) return;
+    try {
+      const slug = projectForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`,{
+        method:'POST',
+        headers:hdrs(),
+        body:JSON.stringify({
+          title: projectForm.title,
+          slug,
+          description: projectForm.description,
+          client_name: projectForm.client,
+          completion_year: new Date().getFullYear().toString(),
+          is_active: true
+        })
+      });
+      if(res.ok){
+        const newProject = await res.json();
+        setProjects(prev=>[newProject,...prev]);
+        setProjectForm({title:'',client:'',description:''});
+        setShowProjectForm(false);
+        setNotification('Project created successfully!');
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){
+      setNotification('Failed to create project');
+      setTimeout(()=>setNotification(''),3000);
+    }
   };
 
   const logout = () => {localStorage.removeItem('rcl_token');localStorage.removeItem('rcl_user');router.push('/admin');};
@@ -118,6 +180,11 @@ export default function AdminDashboard() {
         </header>
 
         <div className="content">
+          {notification && (
+            <div style={{background:'#10B981',color:'white',padding:'12px 16px',borderRadius:'4px',marginBottom:'20px'}}>
+              {notification}
+            </div>
+          )}
           {activeNav==='Dashboard'&&(
             <div>
               <div className="cheader"><div><h1 className="ctitle">Dashboard Overview</h1><p className="csub">Real-time performance metrics and quick management tools.</p></div><button className="btnprimary" onClick={()=>setActiveNav('Articles')}>+ Add New Article</button></div>
@@ -194,7 +261,19 @@ export default function AdminDashboard() {
 
           {activeNav==='Articles'&&(
             <div>
-              <div className="cheader"><div><h1 className="ctitle">Blog Articles</h1><p className="csub">Manage all website articles.</p></div><button className="btnprimary">+ New Article</button></div>
+              <div className="cheader"><div><h1 className="ctitle">Blog Articles</h1><p className="csub">Manage all website articles.</p></div><button className="btnprimary" onClick={()=>setShowArticleForm(!showArticleForm)}>+ New Article</button></div>
+              {showArticleForm && (
+                <div className="panel" style={{marginBottom:'20px',padding:'20px'}}>
+                  <h3 style={{marginBottom:'16px'}}>Create New Article</h3>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={articleForm.title} onChange={e=>setArticleForm(p=>({...p,title:e.target.value}))} placeholder="Article title" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={articleForm.category} onChange={e=>setArticleForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technology, Business" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button className="btnprimary" onClick={createArticle}>Create Article</button>
+                    <button onClick={()=>setShowArticleForm(false)} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                  </div>
+                </div>
+              )}
               <div className="panel">
                 <table className="atable" style={{width:'100%'}}>
                   <thead><tr><th>ARTICLE TITLE</th><th>CATEGORY</th><th>STATUS</th><th>DATE</th><th>ACTIONS</th></tr></thead>
@@ -217,7 +296,19 @@ export default function AdminDashboard() {
 
           {activeNav==='Projects'&&(
             <div>
-              <div className="cheader"><div><h1 className="ctitle">Projects</h1><p className="csub">Manage portfolio projects.</p></div><button className="btnprimary">+ New Project</button></div>
+              <div className="cheader"><div><h1 className="ctitle">Projects</h1><p className="csub">Manage portfolio projects.</p></div><button className="btnprimary" onClick={()=>setShowProjectForm(!showProjectForm)}>+ New Project</button></div>
+              {showProjectForm && (
+                <div className="panel" style={{marginBottom:'20px',padding:'20px'}}>
+                  <h3 style={{marginBottom:'16px'}}>Create New Project</h3>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={projectForm.title} onChange={e=>setProjectForm(p=>({...p,title:e.target.value}))} placeholder="Project title" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Client</label><input value={projectForm.client} onChange={e=>setProjectForm(p=>({...p,client:e.target.value}))} placeholder="Client name" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button className="btnprimary" onClick={createProject}>Create Project</button>
+                    <button onClick={()=>setShowProjectForm(false)} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                  </div>
+                </div>
+              )}
               <div className="panel">
                 <table className="atable" style={{width:'100%'}}>
                   <thead><tr><th>PROJECT TITLE</th><th>CATEGORY</th><th>YEAR</th><th>STATUS</th><th>ACTIONS</th></tr></thead>

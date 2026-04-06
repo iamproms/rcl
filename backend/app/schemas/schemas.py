@@ -71,3 +71,15 @@ class AdminStats(BaseModel):
     unread_messages: int
     total_articles: int
     total_projects: int
+
+
+class NewsletterCreate(BaseModel):
+    email: EmailStr
+
+
+class NewsletterResponse(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+    class Config:
+        from_attributes = True

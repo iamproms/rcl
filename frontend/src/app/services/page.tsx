@@ -71,11 +71,12 @@ export default function ServicesPage() {
               <div className="partners-marquee">
                 <div className="partners-track">
                   {[
-                    { name: 'Total Energies', logo: '/images/clients/total-energies.png' },
-                    { name: 'Shell', logo: '/images/clients/shell.png' },
-                    { name: 'Renaissance Africa Energy', logo: '/images/clients/renaissance.png' },
-                    { name: 'Seplat Energy', logo: '/images/clients/seplat.png' },
-                    { name: 'NLNG', logo: '/images/clients/NLNG.png' }
+                    { name: 'CHLORIDE', logo: '/images/partners/CHLORIDE.png' },
+                    { name: 'MESA', logo: '/images/partners/MESA.png' },
+                    { name: 'NOBEL', logo: '/images/partners/NOBEL.png' },
+                    { name: 'DALE POWER', logo: '/images/partners/DALE.png' },
+                    { name: 'NIDEC', logo: '/images/partners/NIDEC.png' },
+                    { name: 'WEG', logo: '/images/partners/WEG.png' }
                   ].map((partner, idx) => (
                     <div key={`${partner.name}-${idx}`} className="partner-chip">
                       <div className="partner-logo-placeholder">
@@ -89,11 +90,12 @@ export default function ServicesPage() {
                 </div>
                 <div className="partners-track" aria-hidden="true">
                   {[
-                    { name: 'Total Energies', logo: '/images/clients/total-energies.png' },
-                    { name: 'Shell', logo: '/images/clients/shell.png' },
-                    { name: 'Renaissance Africa Energy', logo: '/images/clients/renaissance.png' },
-                    { name: 'Seplat Energy', logo: '/images/clients/seplat.png' },
-                    { name: 'NLNG', logo: '/images/clients/NLNG.png' }
+                    { name: 'CHLORIDE', logo: '/images/partners/CHLORIDE.png' },
+                    { name: 'MESA', logo: '/images/partners/MESA.png' },
+                    { name: 'NOBEL', logo: '/images/partners/NOBEL.png' },
+                    { name: 'DALE POWER', logo: '/images/partners/DALE.png' },
+                    { name: 'NIDEC', logo: '/images/partners/NIDEC.png' },
+                    { name: 'WEG', logo: '/images/partners/WEG.png' }
                   ].map((partner, idx) => (
                     <div key={`dup-${partner.name}-${idx}`} className="partner-chip">
                       <div className="partner-logo-placeholder">

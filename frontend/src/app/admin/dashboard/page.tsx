@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
@@ -135,6 +136,27 @@ export default function AdminDashboard() {
 
   const logout = () => {localStorage.removeItem('rcl_token');localStorage.removeItem('rcl_user');router.push('/admin');};
 
+  const filteredMessages = messages.filter(msg => {
+    const term = searchQuery.toLowerCase().trim();
+    if (!term) return true;
+    return [msg.name, msg.email, msg.subject, msg.message]
+      .some(field => (field ?? '').toLowerCase().includes(term));
+  });
+
+  const filteredArticles = articles.filter(article => {
+    const term = searchQuery.toLowerCase().trim();
+    if (!term) return true;
+    return [article.title, article.category]
+      .some(field => (field ?? '').toLowerCase().includes(term));
+  });
+
+  const filteredProjects = projects.filter(project => {
+    const term = searchQuery.toLowerCase().trim();
+    if (!term) return true;
+    return [project.title, project.category]
+      .some(field => (field ?? '').toLowerCase().includes(term));
+  });
+
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -221,7 +243,7 @@ export default function AdminDashboard() {
             <img src="/logo.png" alt="RCL Logo" style={{height:'32px',width:'auto',objectFit:'contain'}} />
             <span className="tbrand"><strong>REWAJ</strong> <span style={{color:'#FB0202'}}>CORPORATE LIMITED</span></span>
           </div>
-          <div className="tsearch"><span>🔍</span><input type="search" placeholder="Search data..."/></div>
+          <div className="tsearch"><span>🔍</span><input type="search" placeholder="Search data..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} /></div>
           <div className="tactions"><button className="ibtn">🔔</button><button className="ibtn">❓</button><button className="pbtn" onClick={logout}>{userEmail()} ▾</button></div>
         </header>
 
@@ -260,7 +282,7 @@ export default function AdminDashboard() {
                 <div className="ipanel">
                   <div className="ph"><h3 className="ptitle">RECENT INBOX</h3><span className="ibadge">{stats?.unread_messages||0}</span></div>
                   <div>
-                    {messages.slice(0, 3).map(msg=>(
+                    {filteredMessages.slice(0, 3).map(msg=>(
                       <div key={msg.id} className="iitem" onClick={()=>{setSelectedMsg(msg);setActiveNav('Inbox');}}>
                         <div className="iavatar">{msg.name[0]}</div>
                         <div className="ibody">
@@ -269,7 +291,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     ))}
-                    {messages.length===0 && <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>Inbox is empty.</p>}
+                    {filteredMessages.length===0 && <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>No matched messages.</p>}
                   </div>
                   <button className="valltbn" onClick={()=>setActiveNav('Inbox')}>VIEW ALL NOTIFICATIONS</button>
                 </div>
@@ -282,8 +304,8 @@ export default function AdminDashboard() {
               <div className="cheader"><div><h1 className="ctitle">Message Inbox</h1><p className="csub">All contact submissions from the website.</p></div></div>
               <div className="inboxlayout">
                 <div className="inboxlist">
-                  {messages.length===0&&<p style={{padding:'24px',color:'#94A3B8',fontSize:'14px'}}>No messages yet.</p>}
-                  {messages.map(msg=>(
+                  {filteredMessages.length===0&&<p style={{padding:'24px',color:'#94A3B8',fontSize:'14px'}}>No matched messages.</p>}
+                  {filteredMessages.map(msg=>(
                     <div key={msg.id} className={`msgrow${!msg.is_read?' unread':''}${selectedMsg?.id===msg.id?' selected':''}`} onClick={()=>{setSelectedMsg(msg);if(!msg.is_read)markRead(msg.id);}}>
                       <div className="msgav">{msg.name[0]}</div>
                       <div className="msgb"><div className="msgtop"><span className="msgname">{msg.name}</span><span className="msgtime">{new Date(msg.created_at).toLocaleDateString()}</span></div><p className="msgsubj">{msg.subject||'General Inquiry'}</p><p className="msgprev">{msg.message.substring(0,80)}...</p></div>
@@ -329,7 +351,7 @@ export default function AdminDashboard() {
                 <table className="atable" style={{width:'100%'}}>
                   <thead><tr><th>ARTICLE TITLE</th><th>CATEGORY</th><th>STATUS</th><th>DATE</th><th>ACTIONS</th></tr></thead>
                   <tbody>
-                    {articles.map(a=>(
+                    {filteredArticles.map(a=>(
                       <tr key={a.id}>
                         <td><p className="atitle">{a.title}</p></td>
                         <td><span className="cpill">{a.category}</span></td>
@@ -338,7 +360,7 @@ export default function AdminDashboard() {
                         <td><button className="dicon" onClick={()=>deleteArticle(a.id)}>🗑</button></td>
                       </tr>
                     ))}
-                    {articles.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No articles in database.</td></tr>}
+                    {filteredArticles.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No matching articles.</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -367,7 +389,7 @@ export default function AdminDashboard() {
                 <table className="atable" style={{width:'100%'}}>
                   <thead><tr><th>PROJECT TITLE</th><th>CATEGORY</th><th>YEAR</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                   <tbody>
-                    {projects.map(p=>(
+                    {filteredProjects.map(p=>(
                       <tr key={p.id}>
                         <td><p className="atitle">{p.title}</p></td>
                         <td><span className="cpill">{p.category}</span></td>
@@ -376,7 +398,7 @@ export default function AdminDashboard() {
                         <td><button className="dicon" onClick={()=>deleteProject(p.id)}>🗑</button></td>
                       </tr>
                     ))}
-                    {projects.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No projects found.</td></tr>}
+                    {filteredProjects.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No matching projects.</td></tr>}
                   </tbody>
                 </table>
               </div>

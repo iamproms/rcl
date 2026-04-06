@@ -18,7 +18,53 @@ import { articles } from '@/data/blog';
 export default function BlogPage() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
+
+  const filteredArticles = articles.filter(article => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return true;
+    return [article.title, article.excerpt, article.category, article.author]
+      .filter(Boolean)
+      .some(field => field.toLowerCase().includes(term));
+  });
+  const itemsPerPage = 6;
+  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / itemsPerPage));
+  const pagedArticles = filteredArticles.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  const handleSubscribe = async () => {
+    if (!email) return;
+    setIsSubmitting(true);
+    setStatusMessage('');
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/newsletter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        setSubscribed(true);
+        setEmail('');
+        setStatusMessage('✅ Subscription successful. Check your inbox for confirmation.');
+      } else {
+        const data = await res.json().catch(() => null);
+        setStatusMessage(data?.detail || 'Subscription failed. Please try again.');
+      }
+    } catch (error) {
+      setStatusMessage('Subscription failed. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
 
   return (
     <>
@@ -33,7 +79,7 @@ export default function BlogPage() {
         <section className="blog-content">
           <div className="container blog-layout">
             <div>
-              {articles.map(article => (
+              {pagedArticles.map(article => (
                 <article key={article.slug} className="article-card">
                   <div className="article-card__image"><img src={article.image} alt={article.title} /></div>
                   <div className="article-card__body">
@@ -54,15 +100,17 @@ export default function BlogPage() {
                 </article>
               ))}
               <div className="pagination">
-                <button className="page-btn" disabled={page===1} onClick={()=>setPage(p=>p-1)}>‹</button>
-                {[1,2,3].map(p=><button key={p} className={`page-btn${page===p?' active':''}`} onClick={()=>setPage(p)}>{p}</button>)}
-                <button className="page-btn" onClick={()=>setPage(p=>p+1)}>›</button>
+                <button className="page-btn" disabled={page===1} onClick={() => setPage(p => Math.max(1, p - 1))}>‹</button>
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(p => (
+                  <button key={p} className={`page-btn${page===p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+                ))}
+                <button className="page-btn" disabled={page===totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>›</button>
               </div>
             </div>
             <aside className="blog-sidebar">
               <div className="sidebar-widget">
                 <h3 className="sidebar-title">Search Articles</h3>
-                <div className="search-box"><input type="search" placeholder="Search insights..." /></div>
+                <div className="search-box"><input type="search" placeholder="Search insights..." value={searchTerm} onChange={e => handleSearchChange(e.target.value)} /></div>
               </div>
               <div className="sidebar-widget">
                 <h3 className="sidebar-title"><span className="sidebar-title__bar"/>Recent Posts</h3>
@@ -94,12 +142,15 @@ export default function BlogPage() {
               <div className="sidebar-widget sidebar-widget--red">
                 <h3 className="newsletter-title">Stay Updated</h3>
                 <p className="newsletter-sub">Receive the latest industry insights and company news directly in your inbox.</p>
-                {subscribed ? <p style={{color:'#fff',fontSize:'14px',textAlign:'center',padding:'8px 0'}}>✅ You&apos;re subscribed!</p> : (
+                {subscribed ? (
+                  <p style={{color:'#fff',fontSize:'14px',textAlign:'center',padding:'8px 0'}}>✅ You&apos;re subscribed!</p>
+                ) : (
                   <>
-                    <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" className="newsletter-input"/>
-                    <button className="newsletter-btn" onClick={()=>email&&setSubscribed(true)}>SUBSCRIBE</button>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="newsletter-input" />
+                    <button className="newsletter-btn" onClick={handleSubscribe} disabled={isSubmitting || !email}>SUBSCRIBE</button>
                   </>
                 )}
+                {statusMessage && <p style={{color:'#fff',fontSize:'13px',textAlign:'center',padding:'8px 0'}}>{statusMessage}</p>}
               </div>
             </aside>
           </div>

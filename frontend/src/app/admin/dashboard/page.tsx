@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 interface Stats { total_messages: number; unread_messages: number; total_articles: number; total_projects: number; }
 interface Message { id: number; name: string; email: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
 interface Article { id: number; title: string; category: string; is_published: boolean; created_at: string; }
-interface Project { id: number; title: string; category: string; is_active: boolean; completion_year: string; }
+interface Project { id: number; title: string; category: string; status?: string; is_active: boolean; completion_year: string; }
 
 const TAG_COLORS: Record<string,string> = { PARTNERSHIP:'#10B981', URGENT:'#EF4444', 'QUOTE REQ':'#F97316', CAREERS:'#6366F1' };
 
@@ -69,6 +69,27 @@ export default function AdminDashboard() {
     if(!confirm('Delete this project?')) return;
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`,{method:'DELETE',headers:hdrs()});
     setProjects(prev=>prev.filter(p=>p.id!==id));
+  };
+
+  const updateProjectStatus = async (id: number, newStatus: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}/status?status=${newStatus}`, {
+        method: 'PATCH',
+        headers: hdrs()
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProjects(prev => prev.map(p => p.id === id ? { ...p, status: updated.status } : p));
+        setNotification('Project status updated!');
+        setTimeout(() => setNotification(''), 3000);
+      } else {
+        setNotification('Failed to update status');
+        setTimeout(() => setNotification(''), 3000);
+      }
+    } catch (e) {
+      setNotification('Error updating project status');
+      setTimeout(() => setNotification(''), 3000);
+    }
   };
 
   const createArticle = async () => {
@@ -394,7 +415,7 @@ export default function AdminDashboard() {
                         <td><p className="atitle">{p.title}</p></td>
                         <td><span className="cpill">{p.category}</span></td>
                         <td style={{fontSize:'13px',color:'#94A3B8'}}>{p.completion_year}</td>
-                        <td><span className={`spill spill--${p.is_active?'pub':'draft'}`}>● {p.is_active?'Active':'Inactive'}</span></td>
+                        <td><select value={p.status || 'active'} onChange={e => updateProjectStatus(p.id, e.target.value)} style={{padding:'6px 10px',border:'1px solid #CBD5E1',borderRadius:'4px',fontSize:'13px',cursor:'pointer',background:'white'}}><option value="active">On-going</option><option value="executed">Executed</option></select></td>
                         <td><button className="dicon" onClick={()=>deleteProject(p.id)}>🗑</button></td>
                       </tr>
                     ))}

@@ -33,6 +33,7 @@ class Project(Base):
     client_name = Column(String(255))
     completion_year = Column(String(10))
     featured_image = Column(String(500))
+    status = Column(String(20), default='active')  # 'active' or 'executed'
     is_active = Column(Boolean, default=True)
     is_featured = Column(Boolean, default=False)
     sort_order = Column(Integer, default=0)

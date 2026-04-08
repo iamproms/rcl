@@ -83,6 +83,7 @@ class ProjectResponse(BaseModel):
     client_name: Optional[str]
     completion_year: Optional[str]
     featured_image: Optional[str]
+    status: str
     is_active: bool
     is_featured: bool
     sort_order: int
@@ -190,11 +191,16 @@ async def update_project(project_id: int, data: ProjectUpdate, db: AsyncSession 
     await db.refresh(project)
     return project
 
-@projects_router.delete("/{project_id}", status_code=204)
-async def delete_project(project_id: int, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
+@projects_router.patch("/{project_id}/status", response_model=ProjectResponse)
+async def update_project_status(project_id: int, status: str, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
+    if status not in ['active', 'executed']:
+        raise HTTPException(400, "Status must be 'active' or 'executed'")
     result = await db.execute(select(Project).where(Project.id == project_id))
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "Project not found")
-    await db.delete(project)
+    project.status = status
     await db.commit()
+    await db.refresh(project)
+    return project
+

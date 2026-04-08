@@ -50,6 +50,7 @@ a { text-decoration: none; color: inherit; }
 @keyframes slideRight { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes spin     { to { transform: rotate(360deg); } }
 @keyframes slideInFromRight { from { opacity:0; transform:translateX(100px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slideLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 /* ── Navbar ── */
 .navbar {
@@ -365,8 +366,10 @@ body, body * { text-transform: none !important; }
 .clients-section { padding: 60px 0; background: var(--bg-lighter); border-top: 1px solid var(--border); }
 .clients-title { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--text-heading); text-align: center; margin-bottom: 12px; }
 .clients-divider { width: 40px; height: 3px; background: var(--red); margin: 0 auto 40px; border-radius: 2px; }
-.clients-logos { display: flex; justify-content: center; align-items: center; gap: 24px; flex-wrap: wrap; }
-.client-logo { padding: 12px 24px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; font-size: 13.5px; font-weight: 600; color: var(--slate-500); transition: all 0.2s; }
+.clients-slider { overflow: hidden; width: 100%; }
+.clients-logos { display: flex; align-items: center; gap: 60px; flex-wrap: nowrap; min-width: max-content; animation: slideLeft 40s linear infinite; }
+.client-logo { padding: 12px 16px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; min-width: 150px; display: flex; justify-content: center; align-items: center; transition: all 0.2s; flex-shrink: 0; }
+.client-logo img { max-width: 100%; max-height: 60px; width: auto; height: auto; }
 .client-logo:hover { border-color: var(--red); color: var(--red); }
 .projects-cta { position: relative; padding: 90px 0; text-align: center; overflow: hidden; background: var(--navy); }
 .projects-cta__bg { position: absolute; inset: 0; background: url('/images/hero-offshore.jpg') center/cover; opacity: 0.15; }

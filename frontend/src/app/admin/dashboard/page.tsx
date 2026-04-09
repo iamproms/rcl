@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 
 interface Stats { total_messages: number; unread_messages: number; total_articles: number; total_projects: number; }
 interface Message { id: number; name: string; email: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
-interface Article { id: number; title: string; category: string; is_published: boolean; created_at: string; }
-interface Project { id: number; title: string; category: string; status?: string; is_active: boolean; completion_year: string; }
+interface Article { id: number; title: string; slug: string; category: string; content?: string; excerpt?: string; author?: string; featured_image?: string; is_published: boolean; created_at: string; }
+interface Project { id: number; title: string; slug: string; category: string; description?: string; client_name?: string; completion_year: string; featured_image?: string; status?: string; is_active: boolean; }
 
 const TAG_COLORS: Record<string,string> = { PARTNERSHIP:'#10B981', URGENT:'#EF4444', 'QUOTE REQ':'#F97316', CAREERS:'#6366F1' };
 
@@ -28,6 +28,8 @@ export default function AdminDashboard() {
   const [newsletterContent, setNewsletterContent] = useState('');
   const [subscribers, setSubscribers] = useState([]);
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Article|null>(null);
+  const [editingProject, setEditingProject] = useState<Project|null>(null);
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
@@ -100,8 +102,11 @@ export default function AdminDashboard() {
     if(!articleForm.title.trim()) return;
     try {
       const slug = articleForm.slug || articleForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`,{
-        method:'POST',
+      const method = editingArticle ? 'PUT' : 'POST';
+      const url = editingArticle ? `${process.env.NEXT_PUBLIC_API_URL}/api/blog/${editingArticle.id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/blog`;
+      
+      const res = await fetch(url,{
+        method,
         headers:hdrs(),
         body:JSON.stringify({
           title: articleForm.title,
@@ -115,15 +120,21 @@ export default function AdminDashboard() {
         })
       });
       if(res.ok){
-        const newArticle = await res.json();
-        setArticles(prev=>[newArticle,...prev]);
+        const updatedArticle = await res.json();
+        if (editingArticle) {
+          setArticles(prev=>prev.map(a=>a.id===editingArticle.id?updatedArticle:a));
+          setNotification('Article updated successfully!');
+        } else {
+          setArticles(prev=>[updatedArticle,...prev]);
+          setNotification('Article created successfully!');
+        }
         setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});
         setShowArticleForm(false);
-        setNotification('Article created successfully!');
+        setEditingArticle(null);
         setTimeout(()=>setNotification(''),3000);
       }
     } catch(e){
-      setNotification('Failed to create article');
+      setNotification('Failed to save article');
       setTimeout(()=>setNotification(''),3000);
     }
   };
@@ -132,8 +143,11 @@ export default function AdminDashboard() {
     if(!projectForm.title.trim()) return;
     try {
       const slug = projectForm.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`,{
-        method:'POST',
+      const method = editingProject ? 'PUT' : 'POST';
+      const url = editingProject ? `${process.env.NEXT_PUBLIC_API_URL}/api/projects/${editingProject.id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/projects`;
+      
+      const res = await fetch(url,{
+        method,
         headers:hdrs(),
         body:JSON.stringify({
           title: projectForm.title,
@@ -146,20 +160,72 @@ export default function AdminDashboard() {
         })
       });
       if(res.ok){
-        const newProject = await res.json();
-        setProjects(prev=>[newProject,...prev]);
+        const updatedProject = await res.json();
+        if (editingProject) {
+          setProjects(prev=>prev.map(p=>p.id===editingProject.id?updatedProject:p));
+          setNotification('Project updated successfully!');
+        } else {
+          setProjects(prev=>[updatedProject,...prev]);
+          setNotification('Project created successfully!');
+        }
         setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});
         setShowProjectForm(false);
-        setNotification('Project created successfully!');
+        setEditingProject(null);
         setTimeout(()=>setNotification(''),3000);
       }
     } catch(e){
-      setNotification('Failed to create project');
+      setNotification('Failed to save project');
       setTimeout(()=>setNotification(''),3000);
     }
   };
 
   const logout = () => {localStorage.removeItem('rcl_token');localStorage.removeItem('rcl_user');router.push('/admin');};
+
+  const editArticle = async (article: Article) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog/${article.id}`, {headers: hdrs()});
+      if (res.ok) {
+        const fullArticle = await res.json();
+        setArticleForm({
+          title: fullArticle.title,
+          category: fullArticle.category,
+          content: fullArticle.content || '',
+          excerpt: fullArticle.excerpt || '',
+          articleImage: fullArticle.featured_image || '',
+          author: fullArticle.author || '',
+          slug: fullArticle.slug,
+          date: ''
+        });
+        setEditingArticle(article);
+        setShowArticleForm(true);
+      }
+    } catch (e) {
+      setNotification('Failed to load article for editing');
+      setTimeout(() => setNotification(''), 3000);
+    }
+  };
+
+  const editProject = async (project: Project) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${project.id}`, {headers: hdrs()});
+      if (res.ok) {
+        const fullProject = await res.json();
+        setProjectForm({
+          title: fullProject.title,
+          client: fullProject.client_name || '',
+          description: fullProject.description || '',
+          projectImage: fullProject.featured_image || '',
+          projectYear: fullProject.completion_year || '',
+          author: ''
+        });
+        setEditingProject(project);
+        setShowProjectForm(true);
+      }
+    } catch (e) {
+      setNotification('Failed to load project for editing');
+      setTimeout(() => setNotification(''), 3000);
+    }
+  };
 
   const fetchSubscribers = useCallback(async () => {
     try {
@@ -487,7 +553,7 @@ export default function AdminDashboard() {
               <div className="cheader"><div><h1 className="ctitle">Blog Articles</h1><p className="csub">Manage all website articles.</p></div><button className="btnprimary" onClick={()=>setShowArticleForm(!showArticleForm)}>+ New Article</button></div>
               {showArticleForm && (
                 <div className="panel" style={{marginBottom:'20px',padding:'20px'}}>
-                  <h3 style={{marginBottom:'16px'}}>Create New Article</h3>
+                  <h3 style={{marginBottom:'16px'}}>{editingArticle ? 'Edit Article' : 'Create New Article'}</h3>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={articleForm.title} onChange={e=>setArticleForm(p=>({...p,title:e.target.value}))} placeholder="Article title" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Slug</label><input value={articleForm.slug} onChange={e=>setArticleForm(p=>({...p,slug:e.target.value}))} placeholder="url-friendly-slug" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Excerpt</label><textarea value={articleForm.excerpt} onChange={e=>setArticleForm(p=>({...p,excerpt:e.target.value}))} placeholder="Brief summary" rows={2} /></div>
@@ -497,8 +563,8 @@ export default function AdminDashboard() {
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Article Image</label><input type="file" accept="image/*" onChange={handleArticleImageChange} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
-                    <button className="btnprimary" onClick={createArticle}>Create Article</button>
-                    <button onClick={()=>setShowArticleForm(false)} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                    <button className="btnprimary" onClick={createArticle}>{editingArticle ? 'Update Article' : 'Create Article'}</button>
+                    <button onClick={()=>{setShowArticleForm(false);setEditingArticle(null);setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
                   </div>
                 </div>
               )}
@@ -512,7 +578,7 @@ export default function AdminDashboard() {
                         <td><span className="cpill">{a.category}</span></td>
                         <td><span className={`spill spill--${a.is_published?'pub':'draft'}`}>● {a.is_published?'Published':'Draft'}</span></td>
                         <td style={{fontSize:'13px',color:'#94A3B8'}}>{new Date(a.created_at).toLocaleDateString()}</td>
-                        <td><button className="dicon" onClick={()=>deleteArticle(a.id)}>🗑</button></td>
+                        <td><button className="dicon" onClick={()=>editArticle(a)}>✏️</button><button className="dicon" onClick={()=>deleteArticle(a.id)}>🗑</button></td>
                       </tr>
                     ))}
                     {filteredArticles.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No matching articles.</td></tr>}
@@ -527,7 +593,7 @@ export default function AdminDashboard() {
               <div className="cheader"><div><h1 className="ctitle">Projects</h1><p className="csub">Manage portfolio projects.</p></div><button className="btnprimary" onClick={()=>setShowProjectForm(!showProjectForm)}>+ New Project</button></div>
               {showProjectForm && (
                 <div className="panel" style={{marginBottom:'20px',padding:'20px'}}>
-                  <h3 style={{marginBottom:'16px'}}>Create New Project</h3>
+                  <h3 style={{marginBottom:'16px'}}>{editingProject ? 'Edit Project' : 'Create New Project'}</h3>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={projectForm.title} onChange={e=>setProjectForm(p=>({...p,title:e.target.value}))} placeholder="Project title" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Client</label><input value={projectForm.client} onChange={e=>setProjectForm(p=>({...p,client:e.target.value}))} placeholder="Client name" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={projectForm.author} onChange={e=>setProjectForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
@@ -535,8 +601,8 @@ export default function AdminDashboard() {
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Image</label><input type="file" accept="image/*" onChange={handleProjectImageChange} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
-                    <button className="btnprimary" onClick={createProject}>Create Project</button>
-                    <button onClick={()=>setShowProjectForm(false)} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                    <button className="btnprimary" onClick={createProject}>{editingProject ? 'Update Project' : 'Create Project'}</button>
+                    <button onClick={()=>{setShowProjectForm(false);setEditingProject(null);setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
                   </div>
                 </div>
               )}
@@ -550,7 +616,7 @@ export default function AdminDashboard() {
                         <td><span className="cpill">{p.category}</span></td>
                         <td style={{fontSize:'13px',color:'#94A3B8'}}>{p.completion_year}</td>
                         <td><select value={p.status || 'active'} onChange={e => updateProjectStatus(p.id, e.target.value)} style={{padding:'6px 10px',border:'1px solid #CBD5E1',borderRadius:'4px',fontSize:'13px',cursor:'pointer',background:'white'}}><option value="active">On-going</option><option value="executed">Executed</option></select></td>
-                        <td><button className="dicon" onClick={()=>deleteProject(p.id)}>🗑</button></td>
+                        <td><button className="dicon" onClick={()=>editProject(p)}>✏️</button><button className="dicon" onClick={()=>deleteProject(p.id)}>🗑</button></td>
                       </tr>
                     ))}
                     {filteredProjects.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No matching projects.</td></tr>}

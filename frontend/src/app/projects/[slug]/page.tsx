@@ -2,12 +2,47 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
 
-const projectsData: Record<string, {
-  title: string; tag: string; tagColor: string; category: string;
-  client: string; year: string; location: string; duration: string;
-  overview: string; challenge: string; solution: string;
-  outcomes: string[]; services: string[]; image: string;
-}> = {
+interface Project {
+  id: number;
+  title: string;
+  slug: string;
+  description?: string;
+  client_name?: string;
+  completion_year: string;
+  featured_image?: string;
+  category?: string;
+}
+
+async function getProject(slug: string): Promise<Project | null> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${slug}`, {
+      next: { revalidate: 60 } // Revalidate every 60 seconds
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export default async function ProjectPage({ params }: { params: { slug: string } }) {
+  const project = await getProject(params.slug);
+
+  if (!project) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ paddingTop: '72px', background: 'var(--white)', minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h1>Project Not Found</h1>
+            <p>The project you're looking for doesn't exist.</p>
+            <Link href="/projects" style={{ color: '#FB0202', textDecoration: 'none' }}>← Back to Projects</Link>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
   'power-system-maintenance': {
     title: 'Power System Maintenance', tag: 'MAINTENANCE', tagColor: '#FB0202',
     category: 'Power Systems', client: 'Confidential IOC', year: '2023',
@@ -76,22 +111,13 @@ const projectsData: Record<string, {
   },
 };
 
-export async function generateStaticParams() {
-  return Object.keys(projectsData).map(slug => ({ slug }));
-}
-
-export default function ProjectDetailPage({ params }: { params: { slug: string } }) {
-  const project = projectsData[params.slug] ?? projectsData['power-system-maintenance'];
-  const otherProjects = Object.entries(projectsData)
-    .filter(([s]) => s !== params.slug).slice(0, 3);
-
   return (
     <>
       <Navbar />
       <main style={{ paddingTop: '72px' }}>
 
         {/* Hero */}
-        <section className="proj-detail-hero">
+        <section className="proj-detail-hero" style={{ backgroundImage: `url(${project.featured_image || '/images/project-default.jpg'})` }}>
           <div className="proj-detail-hero__overlay" />
           <div className="container proj-detail-hero__content">
             <div className="breadcrumb">
@@ -99,13 +125,12 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
               <Link href="/projects">Projects</Link><span>/</span>
               <span className="breadcrumb-active">{project.title}</span>
             </div>
-            <span className="proj-tag" style={{ background: project.tagColor }}>{project.tag}</span>
+            <span className="proj-tag" style={{ background: '#FB0202' }}>PROJECT</span>
             <h1 className="proj-detail-title">{project.title}</h1>
             <div className="proj-detail-meta">
-              <span>👤 {project.client}</span>
-              <span>📍 {project.location}</span>
-              <span>🕐 Completed: {project.year}</span>
-              <span>⏱ Duration: {project.duration}</span>
+              <span>👤 {project.client_name || 'Confidential Client'}</span>
+              <span>📅 Completed: {project.completion_year}</span>
+              <span>🏷️ {project.category || 'Engineering'}</span>
             </div>
           </div>
         </section>
@@ -113,6 +138,54 @@ export default function ProjectDetailPage({ params }: { params: { slug: string }
         <div className="container proj-detail-layout">
 
           {/* Main */}
+          <div className="proj-detail-main">
+            <div className="proj-detail-section">
+              <h2>Project Overview</h2>
+              <p>{project.description || 'This project demonstrates our expertise in delivering high-quality engineering solutions for the oil and gas industry.'}</p>
+            </div>
+
+            <div className="proj-detail-section">
+              <h2>Client</h2>
+              <p>{project.client_name || 'Confidential Client'}</p>
+            </div>
+
+            <div className="proj-detail-section">
+              <h2>Completion Year</h2>
+              <p>{project.completion_year}</p>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="proj-detail-sidebar">
+            <div className="proj-detail-card">
+              <h3>Project Details</h3>
+              <div className="proj-detail-info">
+                <span>Client:</span>
+                <span>{project.client_name || 'Confidential'}</span>
+                <span>Year:</span>
+                <span>{project.completion_year}</span>
+                <span>Category:</span>
+                <span>{project.category || 'Engineering'}</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* CTA */}
+        <section className="cta-section">
+          <div className="container">
+            <div className="cta-content">
+              <h2>Ready to Start Your Project?</h2>
+              <p>Let's discuss how we can help bring your vision to life.</p>
+              <Link href="/contact" className="btn-primary">Get In Touch</Link>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}
           <div className="proj-detail-main">
             <div className="proj-detail-img">
               <img src={project.image} alt={project.title} />

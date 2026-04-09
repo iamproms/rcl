@@ -1,11 +1,34 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
-import { articles } from '@/data/blog';
 import { notFound } from 'next/navigation';
 
-export default function BlogArticlePage({ params }: { params: { slug: string } }) {
-  const article = articles.find(a => a.slug === params.slug);
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content?: string;
+  author?: string;
+  category?: string;
+  featured_image?: string;
+  created_at: string;
+}
+
+async function getArticle(slug: string): Promise<Article | null> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog/${slug}`, {
+      next: { revalidate: 60 } // Revalidate every 60 seconds
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export default async function BlogArticlePage({ params }: { params: { slug: string } }) {
+  const article = await getArticle(params.slug);
 
   if (!article) return notFound();
 
@@ -24,8 +47,8 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
             </div>
 
             <div className="article__meta">
-              <span className="article__cat">{article.category}</span>
-              <span className="article__date">{article.date}</span>
+              <span className="article__cat">{article.category || 'General'}</span>
+              <span className="article__date">{new Date(article.created_at).toLocaleDateString()}</span>
               <span className="article__read">8 min read</span>
             </div>
 
@@ -34,18 +57,20 @@ export default function BlogArticlePage({ params }: { params: { slug: string } }
             </h1>
 
             <div className="article__author-bar">
-              <div className="author-avatar">{article.author[0]}</div>
+              <div className="author-avatar">{(article.author || 'A')[0]}</div>
               <div>
-                <span className="author-name">{article.author}</span>
-                <span className="author-role">{article.authorRole || 'Senior Engineer, Rewaj Corporate Limited'}</span>
+                <span className="author-name">{article.author || 'Anonymous'}</span>
+                <span className="author-role">Senior Engineer, Rewaj Corporate Limited</span>
               </div>
             </div>
 
-            <div className="article__hero-img">
-              <img src={article.image} alt={article.title} />
-            </div>
+            {article.featured_image && (
+              <div className="article__hero-img">
+                <img src={article.featured_image} alt={article.title} />
+              </div>
+            )}
 
-            <div className="article__content" dangerouslySetInnerHTML={{ __html: article.content || '' }} />
+            <div className="article__content" dangerouslySetInnerHTML={{ __html: article.content || article.excerpt || '' }} />
 
             <div className="article__tags">
               {['Technology', 'Safety', 'Oil & Gas', 'Innovation', 'HSE'].map(tag => (

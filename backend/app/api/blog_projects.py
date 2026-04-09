@@ -37,6 +37,7 @@ class BlogPostResponse(BaseModel):
     title: str
     slug: str
     excerpt: Optional[str]
+    content: Optional[str]
     author: Optional[str]
     category: Optional[str]
     featured_image: Optional[str]
@@ -100,17 +101,40 @@ async def list_posts(
     limit: int = Query(10, le=50),
     skip: int = 0,
     db: AsyncSession = Depends(get_db),
+    admin: Optional[User] = Depends(get_current_admin),
 ):
-    query = select(BlogPost).where(BlogPost.is_published == True).order_by(BlogPost.created_at.desc())
+    # If admin is authenticated, show all posts; otherwise only published ones
+    if admin:
+        query = select(BlogPost).order_by(BlogPost.created_at.desc())
+    else:
+        query = select(BlogPost).where(BlogPost.is_published == True).order_by(BlogPost.created_at.desc())
+    
     if category:
         query = query.where(BlogPost.category == category)
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 
-@blog_router.get("/{slug}", response_model=BlogPostResponse)
-async def get_post(slug: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(BlogPost).where(BlogPost.slug == slug, BlogPost.is_published == True))
+@blog_router.get("/{post_id}", response_model=BlogPostResponse)
+async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_current_admin)):
+    # Try to get by ID first (for admin access)
+    try:
+        post_id_int = int(post_id)
+        result = await db.execute(select(BlogPost).where(BlogPost.id == post_id_int))
+        post = result.scalar_one_or_none()
+        if post:
+            return post
+    except ValueError:
+        pass
+    
+    # Fall back to slug lookup
+    if admin:
+        # Admin can access all posts
+        result = await db.execute(select(BlogPost).where(BlogPost.slug == post_id))
+    else:
+        # Public can only access published posts
+        result = await db.execute(select(BlogPost).where(BlogPost.slug == post_id, BlogPost.is_published == True))
+    
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
@@ -154,8 +178,14 @@ async def list_projects(
     category: Optional[str] = None,
     featured: Optional[bool] = None,
     db: AsyncSession = Depends(get_db),
+    admin: Optional[User] = Depends(get_current_admin),
 ):
-    query = select(Project).where(Project.is_active == True).order_by(Project.sort_order, Project.created_at.desc())
+    # If admin is authenticated, show all projects; otherwise only active ones
+    if admin:
+        query = select(Project).order_by(Project.sort_order, Project.created_at.desc())
+    else:
+        query = select(Project).where(Project.is_active == True).order_by(Project.sort_order, Project.created_at.desc())
+    
     if category:
         query = query.where(Project.category == category)
     if featured is not None:
@@ -163,9 +193,26 @@ async def list_projects(
     result = await db.execute(query)
     return result.scalars().all()
 
-@projects_router.get("/{slug}", response_model=ProjectResponse)
-async def get_project(slug: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Project).where(Project.slug == slug, Project.is_active == True))
+@projects_router.get("/{project_id}", response_model=ProjectResponse)
+async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_current_admin)):
+    # Try to get by ID first (for admin access)
+    try:
+        project_id_int = int(project_id)
+        result = await db.execute(select(Project).where(Project.id == project_id_int))
+        project = result.scalar_one_or_none()
+        if project:
+            return project
+    except ValueError:
+        pass
+    
+    # Fall back to slug lookup
+    if admin:
+        # Admin can access all projects
+        result = await db.execute(select(Project).where(Project.slug == project_id))
+    else:
+        # Public can only access active projects
+        result = await db.execute(select(Project).where(Project.slug == project_id, Project.is_active == True))
+    
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "Project not found")

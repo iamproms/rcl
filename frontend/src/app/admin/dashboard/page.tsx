@@ -24,6 +24,10 @@ export default function AdminDashboard() {
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [newsletterSubject, setNewsletterSubject] = useState('');
+  const [newsletterContent, setNewsletterContent] = useState('');
+  const [subscribers, setSubscribers] = useState([]);
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
@@ -157,6 +161,57 @@ export default function AdminDashboard() {
 
   const logout = () => {localStorage.removeItem('rcl_token');localStorage.removeItem('rcl_user');router.push('/admin');};
 
+  const fetchSubscribers = useCallback(async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/subscribers`, {headers: hdrs()});
+      if (res.ok) {
+        const data = await res.json();
+        setSubscribers(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch subscribers:', e);
+    }
+  }, [hdrs]);
+
+  useEffect(() => {
+    if (activeNav === 'Newsletter') {
+      fetchSubscribers();
+    }
+  }, [activeNav, fetchSubscribers]);
+
+  const sendNewsletter = async () => {
+    if (!newsletterSubject.trim() || !newsletterContent.trim()) {
+      setNotification('Please fill in both subject and content');
+      setTimeout(() => setNotification(''), 3000);
+      return;
+    }
+    
+    setSendingNewsletter(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/send-newsletter`, {
+        method: 'POST',
+        headers: hdrs(),
+        body: JSON.stringify({
+          subject: newsletterSubject,
+          content: newsletterContent
+        })
+      });
+      
+      if (res.ok) {
+        setNotification('Newsletter sent successfully!');
+        setNewsletterSubject('');
+        setNewsletterContent('');
+      } else {
+        setNotification('Failed to send newsletter');
+      }
+    } catch (e) {
+      setNotification('Error sending newsletter');
+    } finally {
+      setSendingNewsletter(false);
+      setTimeout(() => setNotification(''), 3000);
+    }
+  };
+
   const filteredMessages = messages.filter(msg => {
     const term = searchQuery.toLowerCase().trim();
     if (!term) return true;
@@ -221,8 +276,8 @@ export default function AdminDashboard() {
   };
 
   const navItems = [
-    {icon:'📊',label:'Dashboard'},{icon:'📝',label:'Articles'},{icon:'🏗️',label:'Projects'},
-    {icon:'✉️',label:'Inbox',badge:stats?.unread_messages},{icon:'⚙️',label:'Settings'},
+    {icon:'📊',label:'Dashboard'},{icon:'🔍',label:'Search'},{icon:'📝',label:'Articles'},{icon:'🏗️',label:'Projects'},
+    {icon:'✉️',label:'Inbox',badge:stats?.unread_messages},{icon:'📧',label:'Newsletter'},{icon:'⚙️',label:'Settings'},
   ];
 
   if(loading) return (
@@ -348,6 +403,85 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeNav==='Search'&&(
+            <div>
+              <div className="cheader"><div><h1 className="ctitle">Global Search</h1><p className="csub">Search across all content: messages, articles, and projects.</p></div></div>
+              
+              {searchQuery.trim() ? (
+                <div className="dgrid">
+                  {/* Messages Results */}
+                  <div className="panel">
+                    <div className="ph"><h3 className="ptitle">MESSAGES ({filteredMessages.length})</h3></div>
+                    <div style={{maxHeight:'300px',overflowY:'auto'}}>
+                      {filteredMessages.length === 0 ? (
+                        <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>No matching messages.</p>
+                      ) : (
+                        filteredMessages.map(msg => (
+                          <div key={msg.id} className={`msgrow${!msg.is_read?' unread':''}`} onClick={()=>{setSelectedMsg(msg);setActiveNav('Inbox');}} style={{margin:'0',borderBottom:'1px solid var(--border)'}}>
+                            <div className="msgav">{msg.name[0]}</div>
+                            <div className="msgb">
+                              <div className="msgtop"><span className="msgname">{msg.name}{msg.company ? ` (${msg.company})` : ''}</span><span className="msgtime">{new Date(msg.created_at).toLocaleDateString()}</span></div>
+                              <p className="msgsubj">{msg.subject||'General Inquiry'}</p>
+                              <p className="msgprev">{msg.message.substring(0,60)}...</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Articles Results */}
+                  <div className="panel">
+                    <div className="ph"><h3 className="ptitle">ARTICLES ({filteredArticles.length})</h3></div>
+                    <div style={{maxHeight:'300px',overflowY:'auto'}}>
+                      {filteredArticles.length === 0 ? (
+                        <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>No matching articles.</p>
+                      ) : (
+                        <table className="atable" style={{width:'100%'}}>
+                          <tbody>
+                            {filteredArticles.map(a => (
+                              <tr key={a.id} style={{cursor:'pointer'}} onClick={()=>setActiveNav('Articles')}>
+                                <td><p className="atitle">{a.title}</p><p className="adate">{a.category} • {new Date(a.created_at).toLocaleDateString()}</p></td>
+                                <td><span className={`spill spill--${a.is_published?'pub':'draft'}`}>● {a.is_published?'Published':'Draft'}</span></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Projects Results */}
+                  <div className="panel">
+                    <div className="ph"><h3 className="ptitle">PROJECTS ({filteredProjects.length})</h3></div>
+                    <div style={{maxHeight:'300px',overflowY:'auto'}}>
+                      {filteredProjects.length === 0 ? (
+                        <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>No matching projects.</p>
+                      ) : (
+                        <table className="atable" style={{width:'100%'}}>
+                          <tbody>
+                            {filteredProjects.map(p => (
+                              <tr key={p.id} style={{cursor:'pointer'}} onClick={()=>setActiveNav('Projects')}>
+                                <td><p className="atitle">{p.title}</p><p className="adate">{p.category} • {p.completion_year}</p></td>
+                                <td><span className="cpill">{p.status || 'active'}</span></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{textAlign:'center',padding:'60px 20px',color:'#94A3B8'}}>
+                  <div style={{fontSize:'48px',marginBottom:'16px'}}>🔍</div>
+                  <h3 style={{fontSize:'18px',marginBottom:'8px',color:'var(--text-heading)'}}>Start Searching</h3>
+                  <p>Enter a search term in the top search bar to find content across all sections.</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeNav==='Articles'&&(
             <div>
               <div className="cheader"><div><h1 className="ctitle">Blog Articles</h1><p className="csub">Manage all website articles.</p></div><button className="btnprimary" onClick={()=>setShowArticleForm(!showArticleForm)}>+ New Article</button></div>
@@ -422,6 +556,61 @@ export default function AdminDashboard() {
                     {filteredProjects.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No matching projects.</td></tr>}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {activeNav==='Newsletter'&&(
+            <div>
+              <div className="cheader"><div><h1 className="ctitle">Newsletter Management</h1><p className="csub">Send updates to newsletter subscribers.</p></div></div>
+              <div className="dgrid">
+                <div className="panel">
+                  <div className="ph"><h3 className="ptitle">SUBSCRIBERS</h3><span className="live">{subscribers.length}</span></div>
+                  <div style={{maxHeight:'300px',overflowY:'auto'}}>
+                    {subscribers.length === 0 ? (
+                      <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>No subscribers yet.</p>
+                    ) : (
+                      subscribers.map((sub: any, idx: number) => (
+                        <div key={idx} style={{padding:'12px 16px',borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <div>
+                            <p style={{fontSize:'14px',fontWeight:600,color:'var(--text-heading)'}}>{sub.email}</p>
+                            <p style={{fontSize:'12px',color:'var(--slate-400)'}}>{new Date(sub.created_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className="panel">
+                  <div className="ph"><h3 className="ptitle">SEND NEWSLETTER</h3></div>
+                  <div style={{padding:'20px'}}>
+                    <div className="fgroup" style={{marginBottom:'16px'}}>
+                      <label>Subject</label>
+                      <input 
+                        value={newsletterSubject} 
+                        onChange={e => setNewsletterSubject(e.target.value)} 
+                        placeholder="Newsletter subject" 
+                      />
+                    </div>
+                    <div className="fgroup" style={{marginBottom:'16px'}}>
+                      <label>Content</label>
+                      <textarea 
+                        value={newsletterContent} 
+                        onChange={e => setNewsletterContent(e.target.value)} 
+                        placeholder="Newsletter content..." 
+                        rows={8}
+                      />
+                    </div>
+                    <button 
+                      className="btnprimary" 
+                      onClick={sendNewsletter} 
+                      disabled={sendingNewsletter || !newsletterSubject.trim() || !newsletterContent.trim()}
+                      style={{width:'100%'}}
+                    >
+                      {sendingNewsletter ? 'Sending...' : `Send to ${subscribers.length} Subscribers`}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

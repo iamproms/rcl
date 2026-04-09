@@ -7,10 +7,10 @@ import uuid
 
 from app.core.database import get_db
 from app.core.security import get_current_admin
-from app.models.content import ContactSubmission, Service
+from app.models.content import ContactSubmission, Service, NewsletterSubscription
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
-from app.schemas.schemas import ContactResponse, AdminStats
+from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate
 
 router = APIRouter()
 
@@ -106,3 +106,39 @@ async def upload_file(
     # Return the URL (assuming static files are served at /static/)
     file_url = f"/static/uploads/{unique_filename}"
     return {"url": file_url}
+
+
+@router.get("/subscribers")
+async def get_subscribers(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    query = select(NewsletterSubscription).order_by(NewsletterSubscription.created_at.desc())
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+@router.post("/send-newsletter")
+async def send_newsletter(
+    subject: str,
+    content: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    from app.core.email import send_bulk_newsletter
+    
+    # Get all subscribers
+    query = select(NewsletterSubscription)
+    result = await db.execute(query)
+    subscribers = result.scalars().all()
+    
+    if not subscribers:
+        return {"message": "No subscribers found"}
+    
+    # Send newsletter to all subscribers
+    await send_bulk_newsletter(subscribers, subject, content)
+    
+    return {"message": f"Newsletter sent to {len(subscribers)} subscribers"}

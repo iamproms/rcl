@@ -56,10 +56,10 @@ async def send_newsletter_notification(subscription: NewsletterSubscription):
     confirmation_message = Mail(
         from_email=settings.FROM_EMAIL,
         to_emails=subscription.email,
-        subject="You're subscribed to Rewaj updates",
+        subject="You're subscribed to Industry Insights",
         plain_text_content=(
-            "Thank you for subscribing to Rewaj Corporate Limited updates.\n\n"
-            "You will receive the latest news, industry insights, and company updates directly to your inbox.\n\n"
+            "Thank you for subscribing to Rewaj Corporate Limited's Industry Insights.\n\n"
+            "You will receive the latest industry insights, expert analysis, and updates on the Nigerian energy sector directly to your inbox.\n\n"
             "If you did not request this subscription, please ignore this email."
         )
     )
@@ -70,3 +70,22 @@ async def send_newsletter_notification(subscription: NewsletterSubscription):
         sg.send(confirmation_message)
     except Exception as e:
         print(f"Error sending newsletter email: {e}")
+
+
+async def send_bulk_newsletter(subscribers, subject: str, content: str):
+    if not settings.SENDGRID_API_KEY:
+        return
+    
+    sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+    
+    for subscriber in subscribers:
+        try:
+            message = Mail(
+                from_email=settings.FROM_EMAIL,
+                to_emails=subscriber.email,
+                subject=subject,
+                plain_text_content=content
+            )
+            sg.send(message)
+        except Exception as e:
+            print(f"Error sending newsletter to {subscriber.email}: {e}")

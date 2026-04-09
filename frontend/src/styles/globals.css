@@ -633,6 +633,7 @@ body, body * { text-transform: none !important; }
 .msgrow { display: flex; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
 .msgrow:hover { background: var(--bg-lighter); }
 .msgrow.selected { background: #FFF1F1; border-left: 3px solid var(--red); }
+.msgrow.unread { background: #FEF3C7; }
 .msgrow.unread .msgname { font-weight: 800; }
 .msgav { width: 32px; height: 32px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
 .msgb { flex: 1; min-width: 0; }

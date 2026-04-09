@@ -17,6 +17,7 @@ class ContactResponse(BaseModel):
     name: str
     email: str
     phone: Optional[str]
+    company: Optional[str]
     subject: Optional[str]
     message: str
     is_read: bool

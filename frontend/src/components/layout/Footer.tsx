@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, LinkedIn } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -46,7 +46,7 @@ export default function Footer() {
           <h4 className="footer__col-title">Contact Us</h4>
           <div className="contact-item">
             <MapPin size={16} className="contact-icon" />
-            <span>No. 7 Ezimgbu Cresent, Presidential estate, Phase IV, New GRA, Port-Harcourt, Nigeria</span>
+            <span>No. 7 Ezimgbu Crescent, Presidential Estate, Phase IV, New GRA, Port Harcourt. Rivers State. Nigeria.</span>
           </div>
           <div className="contact-item">
             <Phone size={16} className="contact-icon" />

@@ -11,6 +11,7 @@ async def send_contact_notification(submission: ContactSubmission):
     message_text = f"""
     New contact submission from {submission.name} ({submission.email}).
     
+    Company: {submission.company or 'N/A'}
     Phone: {submission.phone or 'N/A'}
     Subject: {submission.subject or 'General Inquiry'}
     

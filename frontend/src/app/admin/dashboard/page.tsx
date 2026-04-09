@@ -307,7 +307,7 @@ export default function AdminDashboard() {
                       <div key={msg.id} className="iitem" onClick={()=>{setSelectedMsg(msg);setActiveNav('Inbox');}}>
                         <div className="iavatar">{msg.name[0]}</div>
                         <div className="ibody">
-                          <div className="imeta"><div><p className="iname">{msg.name}</p><p className="iemail">{msg.email}</p></div><span className="itime">{new Date(msg.created_at).toLocaleDateString()}</span></div>
+                          <div className="imeta"><div><p className="iname">{msg.name}{msg.company ? ` (${msg.company})` : ''}</p><p className="iemail">{msg.email}</p></div><span className="itime">{new Date(msg.created_at).toLocaleDateString()}</span></div>
                           <p className="ipreview">{msg.message.substring(0, 70)}...</p>
                         </div>
                       </div>
@@ -329,14 +329,14 @@ export default function AdminDashboard() {
                   {filteredMessages.map(msg=>(
                     <div key={msg.id} className={`msgrow${!msg.is_read?' unread':''}${selectedMsg?.id===msg.id?' selected':''}`} onClick={()=>{setSelectedMsg(msg);if(!msg.is_read)markRead(msg.id);}}>
                       <div className="msgav">{msg.name[0]}</div>
-                      <div className="msgb"><div className="msgtop"><span className="msgname">{msg.name}</span><span className="msgtime">{new Date(msg.created_at).toLocaleDateString()}</span></div><p className="msgsubj">{msg.subject||'General Inquiry'}</p><p className="msgprev">{msg.message.substring(0,80)}...</p></div>
+                      <div className="msgb"><div className="msgtop"><span className="msgname">{msg.name}{msg.company ? ` (${msg.company})` : ''}</span><span className="msgtime">{new Date(msg.created_at).toLocaleDateString()}</span></div><p className="msgsubj">{msg.subject||'General Inquiry'}</p><p className="msgprev">{msg.message.substring(0,80)}...</p></div>
                     </div>
                   ))}
                 </div>
                 <div className="msgdetail">
                   {selectedMsg?(
                     <>
-                      <div className="mdheader"><div><h2 className="mdname">{selectedMsg.name}</h2><a href={`mailto:${selectedMsg.email}`} className="mdemail">{selectedMsg.email}</a></div><button className="delbtn" onClick={()=>deleteMsg(selectedMsg.id)}>🗑 Delete</button></div>
+                      <div className="mdheader"><div><h2 className="mdname">{selectedMsg.name}{selectedMsg.company ? ` (${selectedMsg.company})` : ''}</h2><a href={`mailto:${selectedMsg.email}`} className="mdemail">{selectedMsg.email}</a></div><button className="delbtn" onClick={()=>deleteMsg(selectedMsg.id)}>🗑 Delete</button></div>
                       <p className="mdsubj">{selectedMsg.subject||'General Inquiry'}</p>
                       <p className="mddate">{new Date(selectedMsg.created_at).toLocaleString()}</p>
                       <div className="mdbody">{selectedMsg.message}</div>

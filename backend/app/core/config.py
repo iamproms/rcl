@@ -22,10 +22,10 @@ class Settings(BaseSettings):
     # Email (SendGrid)
     SENDGRID_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@rewajcorporate.com"
-    ADMIN_EMAIL: str = "admin@rewajcorporate.com"
+    ADMIN_EMAIL: str = "info@rewajcorporate.com"
 
     # Admin
-    ADMIN_EMAIL_DEFAULT: str = "admin@rewajcorporate.com"
+    ADMIN_EMAIL_DEFAULT: str = "info@rewajcorporate.com"
     ADMIN_PASSWORD_DEFAULT: str = "ChangeMe123!"
     ADMIN_SEED_SECRET: str = "default-insecure-secret"
 

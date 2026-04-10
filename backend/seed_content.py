@@ -43,7 +43,7 @@ ARTICLES = [
         "is_published": True
     },
     {
-         "slug": "instrumentation-fittings-critical-oil-gas-operations",
+         "slug": "role-of-ai-oil-exploration",
         "category": "INDUSTRY NEWS",
         "title": "The Role of Artificial Intelligence in Oil Exploration",
         "excerpt": "Artificial intelligence is revolutionizing the way oil and gas companies approach exploration and production. From predictive analytics to autonomous drilling, AI technologies are enhancing efficiency, reducing risks, and optimizing resource extraction.",

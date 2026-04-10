@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Stats { total_messages: number; unread_messages: number; total_articles: number; total_projects: number; }
-interface Message { id: number; name: string; email: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
+interface Message { id: number; name: string; email: string; company?: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
 interface Article { id: number; title: string; slug: string; category: string; content?: string; excerpt?: string; author?: string; featured_image?: string; is_published: boolean; created_at: string; }
 interface Project { id: number; title: string; slug: string; category: string; description?: string; client_name?: string; completion_year: string; featured_image?: string; status?: string; is_active: boolean; }
 
@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
-  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});
+  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});
   const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
@@ -152,6 +152,8 @@ export default function AdminDashboard() {
         body:JSON.stringify({
           title: projectForm.title,
           slug,
+          category: projectForm.category,
+          tag: projectForm.tag,
           description: projectForm.description,
           client_name: projectForm.client,
           completion_year: projectForm.projectYear || new Date().getFullYear().toString(),
@@ -168,7 +170,7 @@ export default function AdminDashboard() {
           setProjects(prev=>[updatedProject,...prev]);
           setNotification('Project created successfully!');
         }
-        setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});
+        setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});
         setShowProjectForm(false);
         setEditingProject(null);
         setTimeout(()=>setNotification(''),3000);
@@ -216,7 +218,8 @@ export default function AdminDashboard() {
           description: fullProject.description || '',
           projectImage: fullProject.featured_image || '',
           projectYear: fullProject.completion_year || '',
-          author: ''
+          category: fullProject.category || '',
+          tag: fullProject.tag || ''
         });
         setEditingProject(project);
         setShowProjectForm(true);
@@ -596,13 +599,14 @@ export default function AdminDashboard() {
                   <h3 style={{marginBottom:'16px'}}>{editingProject ? 'Edit Project' : 'Create New Project'}</h3>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Title</label><input value={projectForm.title} onChange={e=>setProjectForm(p=>({...p,title:e.target.value}))} placeholder="Project title" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Client</label><input value={projectForm.client} onChange={e=>setProjectForm(p=>({...p,client:e.target.value}))} placeholder="Client name" /></div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={projectForm.author} onChange={e=>setProjectForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Year</label><input value={projectForm.projectYear} onChange={e=>setProjectForm(p=>({...p,projectYear:e.target.value}))} placeholder="2024" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={projectForm.category} onChange={e=>setProjectForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technical Services" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Tag</label><input value={projectForm.tag} onChange={e=>setProjectForm(p=>({...p,tag:e.target.value}))} placeholder="e.g. MAINTENANCE" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Completion Year</label><input value={projectForm.projectYear} onChange={e=>setProjectForm(p=>({...p,projectYear:e.target.value}))} placeholder="2024" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Image</label><input type="file" accept="image/*" onChange={handleProjectImageChange} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createProject}>{editingProject ? 'Update Project' : 'Create Project'}</button>
-                    <button onClick={()=>{setShowProjectForm(false);setEditingProject(null);setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',author:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                    <button onClick={()=>{setShowProjectForm(false);setEditingProject(null);setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
                   </div>
                 </div>
               )}

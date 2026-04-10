@@ -27,8 +27,20 @@ async function getArticle(slug: string): Promise<Article | null> {
   }
 }
 
+async function getRecentArticles(): Promise<Article[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 export default async function BlogArticlePage({ params }: { params: { slug: string } }) {
-  const article = await getArticle(params.slug);
+  const [article, recentArticles] = await Promise.all([getArticle(params.slug), getRecentArticles()]);
 
   if (!article) return notFound();
 
@@ -84,14 +96,14 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
           <aside className="article-sidebar">
             <div className="sidebar-widget">
               <h3 className="sidebar-title"><span className="sidebar-title__bar" />Recent Posts</h3>
-              {articles.slice(0, 3).map(p => (
+              {recentArticles.slice(0, 3).map(p => (
                 <Link key={p.slug} href={`/blog/${p.slug}`} className="recent-item">
                   <div className="recent-img">
-                    <img src={p.image} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={p.featured_image || '/images/blog-default.jpg'} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
                     <span className="recent-title">{p.title}</span>
-                    <span className="recent-date">{p.date}</span>
+                    <span className="recent-date">{new Date(p.created_at).toLocaleDateString()}</span>
                   </div>
                 </Link>
               ))}

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.core.database import get_db
-from app.core.security import get_current_admin
+from app.core.security import get_current_admin, get_optional_admin
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
 
@@ -101,7 +101,7 @@ async def list_posts(
     limit: int = Query(10, le=50),
     skip: int = 0,
     db: AsyncSession = Depends(get_db),
-    admin: Optional[User] = Depends(get_current_admin),
+    admin: Optional[User] = Depends(get_optional_admin),
 ):
     # If admin is authenticated, show all posts; otherwise only published ones
     if admin:
@@ -116,7 +116,7 @@ async def list_posts(
     return result.scalars().all()
 
 @blog_router.get("/{post_id}", response_model=BlogPostResponse)
-async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_current_admin)):
+async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_optional_admin)):
     # Try to get by ID first (for admin access)
     try:
         post_id_int = int(post_id)
@@ -178,7 +178,7 @@ async def list_projects(
     category: Optional[str] = None,
     featured: Optional[bool] = None,
     db: AsyncSession = Depends(get_db),
-    admin: Optional[User] = Depends(get_current_admin),
+    admin: Optional[User] = Depends(get_optional_admin),
 ):
     # If admin is authenticated, show all projects; otherwise only active ones
     if admin:
@@ -194,7 +194,7 @@ async def list_projects(
     return result.scalars().all()
 
 @projects_router.get("/{project_id}", response_model=ProjectResponse)
-async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_current_admin)):
+async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_optional_admin)):
     # Try to get by ID first (for admin access)
     try:
         project_id_int = int(project_id)

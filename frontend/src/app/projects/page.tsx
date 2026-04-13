@@ -60,7 +60,9 @@ export default function ProjectsPage() {
         setProjects(data.map((project: any) => ({
           ...project,
           description: project.description ?? project.desc ?? project.description ?? '',
-          image: project.featured_image ?? project.image ?? '',
+          image: (project.featured_image?.startsWith('/') && !project.featured_image.startsWith('/images'))
+                 ? `${process.env.NEXT_PUBLIC_API_URL}${project.featured_image}`
+                 : (project.featured_image ?? project.image ?? ''),
           completion_year: project.completion_year ?? project.year ?? project.completion_year ?? '',
         })));
       } catch (error) {

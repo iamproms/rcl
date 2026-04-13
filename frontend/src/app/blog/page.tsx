@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -22,8 +22,38 @@ export default function BlogPage() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
+  const [allArticles, setAllArticles] = useState(articles);
+  const [loading, setLoading] = useState(true);
 
-  const filteredArticles = articles.filter(article => {
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`);
+        if (res.ok) {
+          const apiArticles = await res.json();
+          const mappedArticles = apiArticles.map((a: any) => ({
+            slug: a.slug,
+            category: a.category.toUpperCase(),
+            date: new Date(a.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+            title: a.title,
+            excerpt: a.excerpt,
+            author: a.author || 'Rewaj Team',
+            image: a.featured_image?.startsWith('/') && !a.featured_image.startsWith('/images') 
+                   ? `${process.env.NEXT_PUBLIC_API_URL}${a.featured_image}` 
+                   : a.featured_image || '/images/blog-featured.jpg'
+          }));
+          setAllArticles(mappedArticles.length > 0 ? mappedArticles : articles);
+        }
+      } catch (err) {
+        console.error("Failed to fetch articles:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchArticles();
+  }, []);
+
+  const filteredArticles = allArticles.filter(article => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return true;
     return [article.title, article.excerpt, article.category, article.author]

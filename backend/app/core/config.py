@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./rewaj.db"
+    BASE_URL: str = ""
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:

@@ -10,8 +10,17 @@ from app.api import contact, auth, services, admin
 from app.api.blog_projects import blog_router, projects_router
 
 async def ensure_project_status_column(conn):
-    result = await conn.execute(text("PRAGMA table_info(projects)"))
-    columns = [row[1] for row in result.fetchall()]
+    dialect = conn.dialect.name
+    if dialect == "sqlite":
+        result = await conn.execute(text("PRAGMA table_info(projects)"))
+        columns = [row[1] for row in result.fetchall()]
+    else:
+        # PostgreSQL / others
+        result = await conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'projects'"
+        ))
+        columns = [row[0] for row in result.fetchall()]
+        
     if 'status' not in columns:
         await conn.execute(text("ALTER TABLE projects ADD COLUMN status VARCHAR(20) DEFAULT 'active'"))
         await conn.execute(text("UPDATE projects SET status='active' WHERE status IS NULL"))

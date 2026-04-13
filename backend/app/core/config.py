@@ -12,6 +12,18 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./rewaj.db"
 
+    @property
+    def ASYNC_DATABASE_URL(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # For SQLite, ensure we use aiosqlite if not specified
+        elif url.startswith("sqlite://"):
+            url = url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+        return url
+
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",

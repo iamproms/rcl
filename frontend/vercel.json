@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://rcl-backend.onrender.com/api/$1"
+    }
+  ]
+}

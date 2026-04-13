@@ -9,6 +9,16 @@ from app.core.database import get_db
 from app.core.security import get_current_admin, get_optional_admin
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
+from app.core.config import settings
+
+def resolve_image_url(image_path: Optional[str]) -> Optional[str]:
+    if not image_path:
+        return image_path
+    if image_path.startswith('/') and not image_path.startswith('/images'):
+        base_url = getattr(settings, "BASE_URL", "").rstrip("/")
+        if base_url:
+            return f"{base_url}{image_path}"
+    return image_path
 
 # ─── Schemas ────────────────────────────────────────────────
 class BlogPostCreate(BaseModel):
@@ -113,7 +123,10 @@ async def list_posts(
         query = query.where(BlogPost.category == category)
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)
-    return result.scalars().all()
+    posts = result.scalars().all()
+    for p in posts:
+        p.featured_image = resolve_image_url(p.featured_image)
+    return posts
 
 @blog_router.get("/{post_id}", response_model=BlogPostResponse)
 async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_optional_admin)):
@@ -138,6 +151,7 @@ async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Opti
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
+    post.featured_image = resolve_image_url(post.featured_image)
     return post
 
 @blog_router.post("", response_model=BlogPostResponse, status_code=201)
@@ -146,6 +160,7 @@ async def create_post(data: BlogPostCreate, db: AsyncSession = Depends(get_db), 
     db.add(post)
     await db.commit()
     await db.refresh(post)
+    post.featured_image = resolve_image_url(post.featured_image)
     return post
 
 @blog_router.put("/{post_id}", response_model=BlogPostResponse)
@@ -168,6 +183,7 @@ async def update_post(
         setattr(post, k, v)
     await db.commit()
     await db.refresh(post)
+    post.featured_image = resolve_image_url(post.featured_image)
     return post
 
 @blog_router.delete("/{post_id}", status_code=204)
@@ -210,7 +226,10 @@ async def list_projects(
     if featured is not None:
         query = query.where(Project.is_featured == featured)
     result = await db.execute(query)
-    return result.scalars().all()
+    projects = result.scalars().all()
+    for p in projects:
+        p.featured_image = resolve_image_url(p.featured_image)
+    return projects
 
 @projects_router.get("/{project_id}", response_model=ProjectResponse)
 async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_optional_admin)):
@@ -235,6 +254,7 @@ async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "Project not found")
+    project.featured_image = resolve_image_url(project.featured_image)
     return project
 
 @projects_router.post("", response_model=ProjectResponse, status_code=201)
@@ -243,6 +263,7 @@ async def create_project(data: ProjectCreate, db: AsyncSession = Depends(get_db)
     db.add(project)
     await db.commit()
     await db.refresh(project)
+    project.featured_image = resolve_image_url(project.featured_image)
     return project
 
 @projects_router.put("/{project_id}", response_model=ProjectResponse)
@@ -265,6 +286,7 @@ async def update_project(
         setattr(project, k, v)
     await db.commit()
     await db.refresh(project)
+    project.featured_image = resolve_image_url(project.featured_image)
     return project
 
 @projects_router.patch("/{project_id}/status", response_model=ProjectResponse)

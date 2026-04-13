@@ -29,6 +29,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "https://rewajcorporate.com",
         "https://www.rewajcorporate.com",
+        "https://rcl-frontend.vercel.app",
+        "https://rcl-frontend-iamproms.vercel.app",
     ]
 
     # Email (SendGrid)

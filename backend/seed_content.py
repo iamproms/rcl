@@ -103,5 +103,8 @@ async def seed():
         await db.commit()
         print("Content seeding complete!")
 
-if __name__ == "__main__":
+def run_seed():
     asyncio.run(seed())
+
+if __name__ == "__main__":
+    run_seed()

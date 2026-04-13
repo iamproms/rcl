@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api import contact, auth, services, admin
 from app.api.blog_projects import blog_router, projects_router
+from seed_content import seed
 
 async def ensure_project_status_column(conn):
     dialect = conn.dialect.name
@@ -27,10 +28,17 @@ async def ensure_project_status_column(conn):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables on startup
+    # Create tables and run migrations on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         await ensure_project_status_column(conn)
+    
+    # Run seeding logic (creates admin + initial content if database is empty)
+    try:
+        await seed()
+    except Exception as e:
+        print(f"Seeding failed: {e}")
+        
     yield
 
 app = FastAPI(

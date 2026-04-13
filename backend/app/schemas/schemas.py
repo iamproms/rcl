@@ -84,3 +84,7 @@ class NewsletterResponse(BaseModel):
     created_at: datetime
     class Config:
         from_attributes = True
+
+class NewsletterSend(BaseModel):
+    subject: str
+    content: str

@@ -149,8 +149,18 @@ async def create_post(data: BlogPostCreate, db: AsyncSession = Depends(get_db), 
     return post
 
 @blog_router.put("/{post_id}", response_model=BlogPostResponse)
-async def update_post(post_id: int, data: BlogPostUpdate, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
-    result = await db.execute(select(BlogPost).where(BlogPost.id == post_id))
+async def update_post(
+    post_id: str,
+    data: BlogPostUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    try:
+        pid_val = int(post_id)
+        result = await db.execute(select(BlogPost).where(BlogPost.id == pid_val))
+    except ValueError:
+        result = await db.execute(select(BlogPost).where(BlogPost.slug == post_id))
+        
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
@@ -161,8 +171,17 @@ async def update_post(post_id: int, data: BlogPostUpdate, db: AsyncSession = Dep
     return post
 
 @blog_router.delete("/{post_id}", status_code=204)
-async def delete_post(post_id: int, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
-    result = await db.execute(select(BlogPost).where(BlogPost.id == post_id))
+async def delete_post(
+    post_id: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    try:
+        post_id_val = int(post_id)
+        result = await db.execute(select(BlogPost).where(BlogPost.id == post_id_val))
+    except ValueError:
+        result = await db.execute(select(BlogPost).where(BlogPost.slug == post_id))
+    
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
@@ -227,8 +246,18 @@ async def create_project(data: ProjectCreate, db: AsyncSession = Depends(get_db)
     return project
 
 @projects_router.put("/{project_id}", response_model=ProjectResponse)
-async def update_project(project_id: int, data: ProjectUpdate, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
-    result = await db.execute(select(Project).where(Project.id == project_id))
+async def update_project(
+    project_id: str,
+    data: ProjectUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    try:
+        pid_val = int(project_id)
+        result = await db.execute(select(Project).where(Project.id == pid_val))
+    except ValueError:
+        result = await db.execute(select(Project).where(Project.slug == project_id))
+        
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "Project not found")
@@ -250,4 +279,22 @@ async def update_project_status(project_id: int, status: str, db: AsyncSession =
     await db.commit()
     await db.refresh(project)
     return project
+
+@projects_router.delete("/{project_id}", status_code=204)
+async def delete_project(
+    project_id: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    try:
+        pid_val = int(project_id)
+        result = await db.execute(select(Project).where(Project.id == pid_val))
+    except ValueError:
+        result = await db.execute(select(Project).where(Project.slug == project_id))
+        
+    project = result.scalar_one_or_none()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    await db.delete(project)
+    await db.commit()
 

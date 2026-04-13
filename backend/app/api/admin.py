@@ -10,7 +10,7 @@ from app.core.security import get_current_admin
 from app.models.content import ContactSubmission, Service, NewsletterSubscription
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
-from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate
+from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterSend
 
 router = APIRouter()
 
@@ -104,7 +104,9 @@ async def upload_file(
         buffer.write(content)
     
     # Return the URL (assuming static files are served at /static/)
-    file_url = f"/static/uploads/{unique_filename}"
+    # For production, we can return the absolute URL if we have a base URL in settings
+    base_url = getattr(settings, "BASE_URL", "").rstrip("/")
+    file_url = f"{base_url}/static/uploads/{unique_filename}" if base_url else f"/static/uploads/{unique_filename}"
     return {"url": file_url}
 
 
@@ -123,12 +125,14 @@ async def get_subscribers(
 
 @router.post("/send-newsletter")
 async def send_newsletter(
-    subject: str,
-    content: str,
+    data: NewsletterSend,
     db: AsyncSession = Depends(get_db),
     admin: User = Depends(get_current_admin),
 ):
     from app.core.email import send_bulk_newsletter
+    
+    subject = data.subject
+    content = data.content
     
     # Get all subscribers
     query = select(NewsletterSubscription)

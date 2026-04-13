@@ -47,8 +47,8 @@ export const articles: Article[] = [
           <p>At Rewaj, we are committed to providing high-quality industrial components that support the performance and safety of oil and gas systems.</p>
     `
   },
-   {
-    slug: 'instrumentation-fittings-critical-oil-gas-operations',
+  {
+    slug: 'artificial-intelligence-in-oil-exploration',
     category: 'INDUSTRY NEWS',
     date: 'December 12, 2025',
     title: 'The Role of Artificial Intelligence in Oil Exploration',

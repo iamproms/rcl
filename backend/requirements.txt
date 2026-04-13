@@ -13,3 +13,4 @@ sendgrid==6.11.0
 httpx==0.27.2
 email-validator>=2.0.0.dev0
 bcrypt==3.2.2
+cloudinary==1.40.0

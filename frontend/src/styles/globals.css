@@ -150,7 +150,7 @@ a { text-decoration: none; color: inherit; }
 .hero__bg { position: absolute; inset: 0; background: url('/hero-offshore.png') center/cover no-repeat; transform: scale(1.04); transition: transform 8s ease; }
 .hero:hover .hero__bg { transform: scale(1); }
 .hero__overlay { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.65) 55%, rgba(15,23,42,0.3) 100%); }
-.hero__content { position: relative; z-index: 2; padding-top: 140px; padding-bottom: 80px; max-width: 680px; }
+.hero__content { position: relative; z-index: 2; padding-top: 140px; padding-bottom: 80px; max-width: 780px; text-align: left; }
 .hero__eyebrow {
   position: relative;
   display: inline-flex;

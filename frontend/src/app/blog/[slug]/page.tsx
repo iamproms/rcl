@@ -80,7 +80,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               <div className="article__hero-img">
                 <img 
                   src={article.featured_image.startsWith('/') && !article.featured_image.startsWith('/images') 
-                       ? `${process.env.NEXT_PUBLIC_API_URL}${article.featured_image}` 
+                       ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${article.featured_image}` 
                        : article.featured_image} 
                   alt={article.title} 
                 />
@@ -106,7 +106,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                   <div className="recent-img">
                     <img 
                       src={p.featured_image?.startsWith('/') && !p.featured_image.startsWith('/images') 
-                           ? `${process.env.NEXT_PUBLIC_API_URL}${p.featured_image}` 
+                           ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${p.featured_image}` 
                            : (p.featured_image || '/images/blog-default.jpg')} 
                       alt={p.title} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} 

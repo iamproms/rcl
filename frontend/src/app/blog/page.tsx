@@ -39,7 +39,7 @@ export default function BlogPage() {
             excerpt: a.excerpt,
             author: a.author || 'Rewaj Team',
             image: a.featured_image?.startsWith('/') && !a.featured_image.startsWith('/images') 
-                   ? `${process.env.NEXT_PUBLIC_API_URL}${a.featured_image}` 
+                   ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${a.featured_image}` 
                    : a.featured_image || '/images/blog-featured.jpg'
           }));
           setAllArticles(mappedArticles.length > 0 ? mappedArticles : articles);

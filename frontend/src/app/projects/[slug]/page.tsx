@@ -81,7 +81,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
           className="proj-detail-hero" 
           style={{ 
             backgroundImage: `url(${project.featured_image?.startsWith('/') && !project.featured_image.startsWith('/images') 
-                              ? `${process.env.NEXT_PUBLIC_API_URL}${project.featured_image}` 
+                              ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${project.featured_image}` 
                               : (project.featured_image || '/images/project-default.jpg')})` 
           }}
         >
@@ -149,7 +149,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
                       style={{ 
                         height: '180px', 
                         background: `url(${project.featured_image?.startsWith('/') && !project.featured_image.startsWith('/images') 
-                                          ? `${process.env.NEXT_PUBLIC_API_URL}${project.featured_image}` 
+                                          ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${project.featured_image}` 
                                           : (project.featured_image || '/images/project-default.jpg')}) center/cover` 
                       }} 
                     />

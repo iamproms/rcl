@@ -33,7 +33,18 @@ export default function AdminDashboard() {
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
-  const hdrs = useCallback(() => ({'Authorization':`Bearer ${token()}`,'Content-Type':'application/json'}),[]);
+  const hdrs = () => ({
+    'Authorization': `Bearer ${token()}`,
+    'Content-Type': 'application/json'
+  });
+
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+    if (url.startsWith('/images/')) return url; // Seeder images
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+    return `${apiBase}${url}`;
+  };
 
   const fetchData = useCallback(async () => {
     if(!token()){router.push('/admin');return;}
@@ -567,7 +578,7 @@ export default function AdminDashboard() {
                     <label>Article Image</label>
                     <input type="file" accept="image/*" onChange={handleArticleImageChange} />
                     {articleForm.articleImage && (
-                      <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${articleForm.articleImage}) center/cover` }} />
+                      <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${resolveImageUrl(articleForm.articleImage)}) center/cover` }} />
                     )}
                   </div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
@@ -612,7 +623,7 @@ export default function AdminDashboard() {
                     <label>Project Image</label>
                     <input type="file" accept="image/*" onChange={handleProjectImageChange} />
                     {projectForm.projectImage && (
-                      <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${projectForm.projectImage}) center/cover` }} />
+                      <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${resolveImageUrl(projectForm.projectImage)}) center/cover` }} />
                     )}
                   </div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>

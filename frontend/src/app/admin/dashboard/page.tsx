@@ -563,7 +563,13 @@ export default function AdminDashboard() {
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={articleForm.author} onChange={e=>setArticleForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Date</label><input type="date" value={articleForm.date} onChange={e=>setArticleForm(p=>({...p,date:e.target.value}))} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={articleForm.category} onChange={e=>setArticleForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technology, Business" /></div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Article Image</label><input type="file" accept="image/*" onChange={handleArticleImageChange} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}>
+                    <label>Article Image</label>
+                    <input type="file" accept="image/*" onChange={handleArticleImageChange} />
+                    {articleForm.articleImage && (
+                      <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${articleForm.articleImage}) center/cover` }} />
+                    )}
+                  </div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createArticle}>{editingArticle ? 'Update Article' : 'Create Article'}</button>
@@ -602,7 +608,13 @@ export default function AdminDashboard() {
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={projectForm.category} onChange={e=>setProjectForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technical Services" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Tag</label><input value={projectForm.tag} onChange={e=>setProjectForm(p=>({...p,tag:e.target.value}))} placeholder="e.g. MAINTENANCE" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Completion Year</label><input value={projectForm.projectYear} onChange={e=>setProjectForm(p=>({...p,projectYear:e.target.value}))} placeholder="2024" /></div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Project Image</label><input type="file" accept="image/*" onChange={handleProjectImageChange} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}>
+                    <label>Project Image</label>
+                    <input type="file" accept="image/*" onChange={handleProjectImageChange} />
+                    {projectForm.projectImage && (
+                      <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${projectForm.projectImage}) center/cover` }} />
+                    )}
+                  </div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createProject}>{editingProject ? 'Update Project' : 'Create Project'}</button>

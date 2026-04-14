@@ -102,12 +102,18 @@ async def upload_file(
             import tempfile
             import os as base_os
             
-            # Parse credentials from URL
-            stripped = cloudinary_url.replace("cloudinary://", "")
-            api_key = stripped.split(":")[0]
-            rest = stripped.split(":", 1)[1]
-            api_secret = rest.split("@")[0]
-            cloud_name = rest.split("@")[1]
+            # Parse credentials from URL safely
+            import re
+            match = re.search(r"cloudinary://([^:]+):([^@]+)@([^/?#\s]+)", cloudinary_url)
+            if not match:
+                print(f"FAILED TO PARSE CLOUDINARY_URL: {cloudinary_url}")
+                raise HTTPException(status_code=500, detail="Malformed CLOUDINARY_URL")
+            
+            api_key = match.group(1)
+            api_secret = match.group(2)
+            cloud_name = match.group(3).strip("/")  # Ensure no trailing slash
+            
+            print(f"DEBUG: Configured Cloudinary for {cloud_name}")
             cloudinary.config(
                 cloud_name=cloud_name,
                 api_key=api_key,
@@ -133,7 +139,10 @@ async def upload_file(
                     base_os.remove(temp_path)
             
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
+            import traceback
+            print("CLOUDINARY ERROR TRACEBACK:")
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"Cloudinary Error: {str(e)}")
     else:
         # ── Local disk fallback (dev only) ──
         upload_dir = "static/uploads"

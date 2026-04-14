@@ -340,10 +340,11 @@ export default function AdminDashboard() {
         const data = await res.json();
         return data.url;
       } else {
-        const errText = await res.text();
-        console.error("Upload failed:", res.status, errText);
-        setNotification(`Upload failed: ${res.status} error.`);
-        setTimeout(() => setNotification(''), 4000);
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = errJson.detail || `Server error ${res.status}`;
+        console.error("Upload failed:", res.status, errJson);
+        setNotification(`Upload failed: ${errMsg}`);
+        setTimeout(() => setNotification(''), 5000);
         return null;
       }
     } catch (e: any) {

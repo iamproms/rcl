@@ -77,17 +77,21 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             </div>
 
             {(() => {
-              let headerImage = article.featured_image || '/images/blog-default.jpg';
-              if (headerImage.startsWith('/static')) {
-                headerImage = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${headerImage}`;
-              }
+              const resolveImageUrl = (path?: string) => {
+                if (!path) return '/images/blog-featured.jpg';
+                if (path.startsWith('http')) return path;
+                if (path.startsWith('/static')) return `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${path}`;
+                if (path.startsWith('/images/')) return path;
+                if (path.startsWith('/')) return `/images${path}`;
+                return `/images/${path}`;
+              };
+              const headerImage = resolveImageUrl(article.featured_image);
               return (
                 <div className="article__hero-img">
                   <img 
                     src={headerImage} 
                     alt={article.title} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={undefined}
                   />
                 </div>
               );
@@ -107,28 +111,31 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
           <aside className="article-sidebar">
             <div className="sidebar-widget">
               <h3 className="sidebar-title"><span className="sidebar-title__bar" />Recent Posts</h3>
-              {recentArticles.slice(0, 3).map(p => (
-                <Link key={p.slug} href={`/blog/${p.slug}`} className="recent-item">
-                  <div className="recent-img">
-                    <img 
-                      src={(() => {
-                        let sidebarImg = p.featured_image || '/images/blog-default.jpg';
-                        if (sidebarImg.startsWith('/static')) {
-                          sidebarImg = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${sidebarImg}`;
-                        }
-                        return sidebarImg;
-                      })()} 
-                      alt={p.title} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={undefined}
-                    />
-                  </div>
-                  <div>
-                    <span className="recent-title">{p.title}</span>
-                    <span className="recent-date">{new Date(p.created_at).toLocaleDateString()}</span>
-                  </div>
-                </Link>
-              ))}
+              {recentArticles.slice(0, 3).map(p => {
+                const resolveImageUrl = (path?: string) => {
+                  if (!path) return '/images/blog-featured.jpg';
+                  if (path.startsWith('http')) return path;
+                  if (path.startsWith('/static')) return `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${path}`;
+                  if (path.startsWith('/images/')) return path;
+                  if (path.startsWith('/')) return `/images${path}`;
+                  return `/images/${path}`;
+                };
+                return (
+                  <Link key={p.slug} href={`/blog/${p.slug}`} className="recent-item">
+                    <div className="recent-img">
+                      <img 
+                        src={resolveImageUrl(p.featured_image)} 
+                        alt={p.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div>
+                      <span className="recent-title">{p.title}</span>
+                      <span className="recent-date">{new Date(p.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
 
             <div className="sidebar-widget">

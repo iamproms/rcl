@@ -28,7 +28,7 @@ export default function Navbar() {
       <div className="container navbar__inner">
         <Link href="/" className="navbar__logo">
           <img src="/logo.png" alt="Rewaj Corporate Limited" className="logo-icon" />
-          <span className="logo-text"><strong>REWAJ</strong> <span className="logo-red">CORPORATE LIMITED</span></span>
+          <span className="logo-text"><strong>REWAJ</strong> <span className="logo-suffix">CORPORATE LIMITED</span></span>
         </Link>
         <ul className="navbar__links">
           {navLinks.map(link => (

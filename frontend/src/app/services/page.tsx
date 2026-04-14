@@ -9,7 +9,14 @@ export const metadata = {
 };
 
 const services = [
-  { icon: Cog, title: 'Engineering & Design', slug: 'engineering-design', image: 'engineering-design.jpg', desc: 'Comprehensive engineering design solutions for oil and gas facilities, pipelines, and processing systems tailored to international standards and local regulations.', highlights: ['FEED & Detail Engineering', 'Pipeline Design', 'Structural Analysis', 'Process Engineering'] },
+  {
+    icon: Cog,
+    title: 'Engineering & Design',
+    slug: 'engineering-design',
+    image: 'engineering-design.jpg',
+    desc: 'Comprehensive engineering design solutions for oil and gas maintenance, upgrades, modifications, and facility enhancements, tailored to international standards and Nigerian local regulations.',
+    highlights: ['FEED & Detail Engineering', 'Structural Repair & Fabrication Design', 'Process, Electrical & Instrumentation System Engineering']
+  },
   { icon: Zap, title: 'Control Systems Integration', slug: 'control-systems', image: 'control-systems.jpg', desc: 'End-to-end integration of control and automation systems including SCADA, DCS, and PLC systems for optimal plant performance and safety.', highlights: ['SCADA Systems', 'DCS Integration', 'PLC Programming', 'HMI Development'] },
   { icon: Wrench, title: 'Maintenance Services', slug: 'maintenance', image: 'maintenance.jpg', desc: 'Planned and corrective maintenance programs for oil and gas equipment to maximize uptime and extend the operational lifecycle of critical assets.', highlights: ['Preventive Maintenance', 'Corrective Maintenance', 'Shutdown/Turnaround', 'Asset Management'] },
   { icon: Package, title: 'Procurement & Supply', slug: 'procurement', image: 'procurement.jpg', desc: 'Strategic procurement of specialized materials, equipment, and components from vetted global and local suppliers with full quality assurance.', highlights: ['Equipment Sourcing', 'Vendor Management', 'Material Supply', 'Logistics Support'] },
@@ -17,7 +24,14 @@ const services = [
   { icon: Gauge, title: 'Testing & Calibration', slug: 'testing', image: 'testing-calibration.jpg', desc: 'Precision testing and calibration of instrumentation and safety systems to meet all regulatory and operational performance requirements.', highlights: ['Instrument Calibration', 'Functional Testing', 'FAT/SAT Support', 'Pressure Testing'] },
   { icon: Hammer, title: 'Equipment Installation & Commissioning', slug: 'installation', image: 'instrumentation-automation.jpg', desc: 'Full installation, hook-up, and commissioning of oil and gas equipment including rotating machinery and static equipment from mobilization to handover.', highlights: ['Mechanical Installation', 'Electrical Hook-up', 'Pre-commissioning', 'Commissioning'] },
   { icon: Bot, title: 'Instrumentation & Automation', slug: 'automation', image: 'installation-commissioning.jpg', desc: 'Design and deployment of cutting-edge instrumentation and automation solutions to improve process efficiency and ensure operational safety.', highlights: ['Flow Measurement', 'Level & Pressure Instruments', 'Safety Instrumented Systems', 'Fire & Gas Detection'] },
-  { icon: Search, title: 'Inspection Services', slug: 'inspection', image: 'inspection.jpg', desc: 'Structural and equipment inspection using advanced NDT techniques to ensure asset integrity and full regulatory compliance across all operations.', highlights: ['NDT Inspections', 'Structural Surveys', 'Corrosion Assessment', 'Integrity Management'] },
+  {
+    icon: Search,
+    title: 'Inspection Services',
+    slug: 'inspection',
+    image: 'inspection.jpg',
+    desc: 'Structural and equipment inspection using advanced techniques to ensure asset integrity, safety compliance, and long-term reliability across all oilfield operations.',
+    highlights: ['Fire Suppression & Safety System Inspections', 'Electrical, UPS & Battery System Integrity Management']
+  },
 ];
 
 export default function ServicesPage() {
@@ -80,7 +94,7 @@ export default function ServicesPage() {
                   ].map((partner, idx) => (
                     <div key={`${partner.name}-${idx}`} className="partner-chip">
                       <div className="partner-logo-placeholder">
-                        <img src={partner.logo} alt={`${partner.name} logo`} style={{maxHeight:'60px',width:'auto'}} />
+                        <img src={partner.logo} alt={`${partner.name} logo`} style={{ maxHeight: '60px', width: 'auto' }} />
                       </div>
                       <div className="partner-info">
                         <div className="partner-name">{partner.name}</div>
@@ -99,7 +113,7 @@ export default function ServicesPage() {
                   ].map((partner, idx) => (
                     <div key={`dup-${partner.name}-${idx}`} className="partner-chip">
                       <div className="partner-logo-placeholder">
-                        <img src={partner.logo} alt={`${partner.name} logo`} style={{maxHeight:'60px',width:'auto'}} />
+                        <img src={partner.logo} alt={`${partner.name} logo`} style={{ maxHeight: '60px', width: 'auto' }} />
                       </div>
                       <div className="partner-info">
                         <div className="partner-name">{partner.name}</div>

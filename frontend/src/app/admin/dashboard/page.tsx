@@ -66,9 +66,9 @@ export default function AdminDashboard() {
       setArticles(await aRes.json());
       setProjects(await pRes.json());
     } catch(e) {} finally { setLoading(false); }
-  }, [router]);
+  }, []);
 
-  useEffect(()=>{fetchData();},[fetchData]);
+  useEffect(()=>{fetchData();},[]);
 
   const markRead = async (id:number) => {
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/messages/${id}/read`,{method:'PATCH',headers:hdrs()});
@@ -206,12 +206,12 @@ export default function AdminDashboard() {
         const fullArticle = await res.json();
         setArticleForm({
           title: fullArticle.title,
-          category: fullArticle.category,
+          category: fullArticle.category || '',
           content: fullArticle.content || '',
           excerpt: fullArticle.excerpt || '',
           articleImage: fullArticle.featured_image || '',
           author: fullArticle.author || '',
-          slug: fullArticle.slug,
+          slug: fullArticle.slug || '',
           date: ''
         });
         setEditingArticle(article);
@@ -256,13 +256,13 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error('Failed to fetch subscribers:', e);
     }
-  }, [hdrs]);
+  }, []);
 
   useEffect(() => {
     if (activeNav === 'Newsletter') {
       fetchSubscribers();
     }
-  }, [activeNav, fetchSubscribers]);
+  }, [activeNav]);
 
   const sendNewsletter = async () => {
     if (!newsletterSubject.trim() || !newsletterContent.trim()) {

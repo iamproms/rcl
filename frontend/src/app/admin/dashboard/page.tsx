@@ -47,21 +47,26 @@ export default function AdminDashboard() {
   };
 
   const fetchData = useCallback(async () => {
-    if(!token()){router.push('/admin');return;}
+    const tkn = typeof window !== 'undefined' ? localStorage.getItem('rcl_token') : null;
+    if (!tkn) { router.push('/admin'); return; }
+    const _hdrs = {
+      'Authorization': `Bearer ${tkn}`,
+      'Content-Type': 'application/json'
+    };
     try {
       const [sRes, mRes, aRes, pRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`,{headers:hdrs()}),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/messages`,{headers:hdrs()}),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`,{headers:hdrs()}),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`,{headers:hdrs()}),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, { headers: _hdrs }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/messages`, { headers: _hdrs }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`, { headers: _hdrs }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`, { headers: _hdrs }),
       ]);
-      if(sRes.status===401){router.push('/admin');return;}
+      if (sRes.status === 401) { router.push('/admin'); return; }
       setStats(await sRes.json());
       setMessages(await mRes.json());
       setArticles(await aRes.json());
       setProjects(await pRes.json());
-    } catch(e){} finally{setLoading(false);}
-  },[router,hdrs]);
+    } catch(e) {} finally { setLoading(false); }
+  }, [router]);
 
   useEffect(()=>{fetchData();},[fetchData]);
 

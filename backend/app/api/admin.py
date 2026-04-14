@@ -96,12 +96,13 @@ async def upload_file(
     if cloudinary_url:
         # ── Cloudinary upload (persistent) ──
         try:
+            os.environ["CLOUDINARY_URL"] = cloudinary_url
             import cloudinary
             import cloudinary.uploader
-            cloudinary.config(cloudinary_url=cloudinary_url)
+            
             content = await file.read()
             result = cloudinary.uploader.upload(
-                io.BytesIO(content),
+                content,
                 folder="rcl-uploads",
                 resource_type="image",
             )

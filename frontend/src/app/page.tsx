@@ -2,7 +2,8 @@ import Hero from '@/components/sections/Hero';
 import StatsBar from '@/components/sections/StatsBar';
 import WhatWeDo from '@/components/sections/WhatWeDo';
 import WhyPartner from '@/components/sections/WhyPartner';
-import { CTABanner, Footer } from '@/components/sections/CTAAndFooter';
+import { CTABanner } from '@/components/sections/CTAAndFooter';
+import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata = {

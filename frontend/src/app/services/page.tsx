@@ -75,12 +75,12 @@ export default function ServicesPage() {
                     { name: 'MESA', logo: '/images/partners/MESA.png' },
                     { name: 'NOBEL', logo: '/images/partners/NOBEL.png' },
                     { name: 'DALE POWER', logo: '/images/partners/DALE.png' },
-                    { name: 'NIDEC', logo: '/images/partners/NIDEC.png' },
+                    { name: 'NIDEC/KATO/LEROY SOMER', logo: '/images/partners/NIDEC.png' },
                     { name: 'WEG', logo: '/images/partners/WEG.png' }
                   ].map((partner, idx) => (
                     <div key={`${partner.name}-${idx}`} className="partner-chip">
                       <div className="partner-logo-placeholder">
-                        <img src={partner.logo} alt={`${partner.name} logo`} style={{maxHeight:'40px',width:'auto'}} />
+                        <img src={partner.logo} alt={`${partner.name} logo`} style={{maxHeight:'60px',width:'auto'}} />
                       </div>
                       <div className="partner-info">
                         <div className="partner-name">{partner.name}</div>
@@ -94,12 +94,12 @@ export default function ServicesPage() {
                     { name: 'MESA', logo: '/images/partners/MESA.png' },
                     { name: 'NOBEL', logo: '/images/partners/NOBEL.png' },
                     { name: 'DALE POWER', logo: '/images/partners/DALE.png' },
-                    { name: 'NIDEC', logo: '/images/partners/NIDEC.png' },
+                    { name: 'NIDEC/KATO/LEROY SOMER', logo: '/images/partners/NIDEC.png' },
                     { name: 'WEG', logo: '/images/partners/WEG.png' }
                   ].map((partner, idx) => (
                     <div key={`dup-${partner.name}-${idx}`} className="partner-chip">
                       <div className="partner-logo-placeholder">
-                        <img src={partner.logo} alt={`${partner.name} logo`} style={{maxHeight:'40px',width:'auto'}} />
+                        <img src={partner.logo} alt={`${partner.name} logo`} style={{maxHeight:'60px',width:'auto'}} />
                       </div>
                       <div className="partner-info">
                         <div className="partner-name">{partner.name}</div>

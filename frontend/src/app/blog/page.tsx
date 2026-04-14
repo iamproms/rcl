@@ -111,7 +111,16 @@ export default function BlogPage() {
             <div>
               {pagedArticles.map(article => (
                 <article key={article.slug} className="article-card">
-                  <div className="article-card__image"><img src={article.image} alt={article.title} /></div>
+                  <div className="article-card__image">
+                    <img 
+                      src={article.image} 
+                      alt={article.title} 
+                      loading="eager"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/blog-featured.jpg';
+                      }}
+                    />
+                  </div>
                   <div className="article-card__body">
                     <div className="article-meta">
                       <span className="article-category">{article.category}</span>

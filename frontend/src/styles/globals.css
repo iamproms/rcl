@@ -142,8 +142,16 @@ a { text-decoration: none; color: inherit; }
 .contact-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; width: 16px; height: 16px; color: var(--red); stroke-width: 1.5; }
 .footer__bottom { border-top: 1px solid rgba(255,255,255,0.08); padding: 18px 0; }
 .footer__bottom-inner { font-size: 12.5px; color: rgba(255,255,255,0.35); text-align: center; }
-@media (max-width: 900px) { .footer__top { grid-template-columns: 1fr 1fr; } .footer__brand { grid-column: 1/-1; } }
-@media (max-width: 560px) { .footer__top { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { 
+  .footer__top { grid-template-columns: 1fr 1fr; gap: 40px; } 
+  .footer__brand { grid-column: 1/-1; text-align: center; display: flex; flex-direction: column; align-items: center; } 
+  .footer__socials { justify-content: center; }
+}
+@media (max-width: 560px) { 
+  .footer__top { grid-template-columns: 1fr; gap: 32px; text-align: center; } 
+  .footer__col ul { align-items: center; }
+  .contact-item { justify-content: center; }
+}
 
 /* ── Hero ── */
 .hero { position: relative; min-height: 100vh; display: flex; align-items: center; overflow: hidden; }
@@ -795,8 +803,8 @@ body, body * { text-transform: none !important; }
 }
 
 .partner-logo-placeholder {
-  width: 160px;
-  height: 60px;
+  width: 100%;
+  height: 80px;
   background: transparent;
   display: flex;
   align-items: center;

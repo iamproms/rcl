@@ -61,7 +61,7 @@ export default function Footer() {
 
       <div className="footer__bottom">
         <div className="container footer__bottom-inner">
-          <p>© {new Date().getFullYear()} Rewaj Corporate Limited. All rights reserved. Professionalism in Engineering.</p>
+          <p>© {new Date().getFullYear()} REWAJ CORPORATE LIMITED. All rights reserved. Professionalism in Engineering.</p>
         </div>
       </div>
     </footer>

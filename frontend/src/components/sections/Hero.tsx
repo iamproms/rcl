@@ -3,7 +3,13 @@ import Link from 'next/link';
 export default function Hero() {
   return (
     <section className="hero">
-      <div className="hero__bg" /> <img src="/hero-offshore.png" alt="Hero Background" className="hero__bg" />
+      <img 
+        src="/hero-offshore.png" 
+        alt="Hero Background" 
+        className="hero__bg" 
+        loading="eager"
+        style={{ objectFit: 'cover' }}
+      />
       <div className="hero__overlay" />
       <div className="container hero__content">
         <span className="hero__eyebrow">Nigeria's energy partner</span>

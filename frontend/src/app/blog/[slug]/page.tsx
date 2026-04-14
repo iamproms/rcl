@@ -87,9 +87,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                     src={headerImage} 
                     alt={article.title} 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/blog-default.jpg';
-                    }}
+                    onError={undefined}
                   />
                 </div>
               );
@@ -122,9 +120,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                       })()} 
                       alt={p.title} 
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/blog-default.jpg';
-                      }}
+                      onError={undefined}
                     />
                   </div>
                   <div>

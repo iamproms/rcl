@@ -31,17 +31,25 @@ export default function BlogPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`);
         if (res.ok) {
           const apiArticles = await res.json();
-          const mappedArticles = apiArticles.map((a: any) => ({
-            slug: a.slug,
-            category: a.category.toUpperCase(),
-            date: new Date(a.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-            title: a.title,
-            excerpt: a.excerpt,
-            author: a.author || 'Rewaj Team',
-            image: a.featured_image?.startsWith('/') && !a.featured_image.startsWith('/images') 
-                   ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${a.featured_image}` 
-                   : a.featured_image || '/images/blog-featured.jpg'
-          }));
+          const mappedArticles = apiArticles.map((a: any) => {
+            let imageUrl = a.featured_image || '/images/blog-featured.jpg';
+            
+            // If it's a backend-hosted static asset, prepend API URL
+            if (imageUrl.startsWith('/static')) {
+              imageUrl = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${imageUrl}`;
+            } 
+            // If it's an absolute URL (like Cloudinary), or already has /images or is a local root asset, leave as is
+            
+            return {
+              slug: a.slug,
+              category: a.category.toUpperCase(),
+              date: new Date(a.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+              title: a.title,
+              excerpt: a.excerpt,
+              author: a.author || 'Rewaj Team',
+              image: imageUrl
+            };
+          });
           setAllArticles(mappedArticles.length > 0 ? mappedArticles : articles);
         }
       } catch (err) {

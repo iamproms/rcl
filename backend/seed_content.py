@@ -32,7 +32,7 @@ ARTICLES = [
         "title": "Why Instrumentation Fittings Are Critical in Oil and Gas Operations",
         "excerpt": "The oil and gas industry operates in one of the most demanding industrial environments in the world. From offshore drilling platforms to onshore refineries and petrochemical plants, the need for reliable equipment is critical. Among the many components that ensure safe and efficient operations, instrumentation fittings and connectors play a vital role.",
         "author": "Faniyi Timilehin Esther",
-        "featured_image": "/testing-calibration.jpg",
+        "featured_image": "/images/testing-calibration.jpg",
         "content": """
           <p>The oil and gas industry operates in one of the most demanding industrial environments in the world. From offshore drilling platforms to onshore refineries and petrochemical plants, the need for reliable equipment is critical. Among the many components that ensure safe and efficient operations, instrumentation fittings and connectors play a vital role.</p>
           <p>Instrumentation fittings are mechanical components used to connect pipes, tubes, valves, and other equipment in process control systems. They ensure the secure transfer of fluids, gases, and pressure signals across different parts of an industrial system.</p>
@@ -48,7 +48,7 @@ ARTICLES = [
         "title": "The Role of Artificial Intelligence in Oil Exploration",
         "excerpt": "Artificial intelligence is revolutionizing the way oil and gas companies approach exploration and production. From predictive analytics to autonomous drilling, AI technologies are enhancing efficiency, reducing risks, and optimizing resource extraction.",
         "author": "Chukwubuikem Progress Anene",
-        "featured_image": "/team-offshore.jpg",
+        "featured_image": "/images/team-offshore.jpg",
         "content": """
           <p>Artificial Intelligence (AI) is transforming the oil and gas industry, especially in exploration, where vast amounts of geological and operational data must be analyzed to make critical decisions. Traditionally, teams of geoscientists and engineers spent weeks interpreting seismic surveys, drilling logs, and reservoir data. AI now enhances this process by quickly detecting patterns and insights that would take humans much longer to identify, improving both accuracy and efficiency. Machine learning models analyze seismic data to locate potential hydrocarbon reservoirs, optimize drilling parameters, and forecast reservoir performance, augmenting human expertise rather than replacing it. By combining historical production data with geological information, AI enables engineers to make better-informed decisions, reduce uncertainty, and plan exploration strategies more effectively.</p>
           <p>Safety is a top priority in oil exploration, and AI contributes by monitoring equipment and operations in real time. Predictive maintenance detects early signs of equipment failure before they escalate, while AI-driven hazard prediction identifies potential drilling risks, helping companies prevent accidents and minimize downtime. These intelligent systems not only protect personnel but also improve operational efficiency, ensuring exploration activities proceed safely even in challenging environments.</p>

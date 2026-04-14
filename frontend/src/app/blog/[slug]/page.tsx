@@ -76,16 +76,24 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               </div>
             </div>
 
-            {article.featured_image && (
-              <div className="article__hero-img">
-                <img 
-                  src={article.featured_image.startsWith('/') && !article.featured_image.startsWith('/images') 
-                       ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${article.featured_image}` 
-                       : article.featured_image} 
-                  alt={article.title} 
-                />
-              </div>
-            )}
+            {(() => {
+              let headerImage = article.featured_image || '/images/blog-default.jpg';
+              if (headerImage.startsWith('/static')) {
+                headerImage = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${headerImage}`;
+              }
+              return (
+                <div className="article__hero-img">
+                  <img 
+                    src={headerImage} 
+                    alt={article.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/blog-default.jpg';
+                    }}
+                  />
+                </div>
+              );
+            })()}
 
             <div className="article__content" dangerouslySetInnerHTML={{ __html: article.content || article.excerpt || '' }} />
 
@@ -105,11 +113,18 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                 <Link key={p.slug} href={`/blog/${p.slug}`} className="recent-item">
                   <div className="recent-img">
                     <img 
-                      src={p.featured_image?.startsWith('/') && !p.featured_image.startsWith('/images') 
-                           ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${p.featured_image}` 
-                           : (p.featured_image || '/images/blog-default.jpg')} 
+                      src={(() => {
+                        let sidebarImg = p.featured_image || '/images/blog-default.jpg';
+                        if (sidebarImg.startsWith('/static')) {
+                          sidebarImg = `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${sidebarImg}`;
+                        }
+                        return sidebarImg;
+                      })()} 
                       alt={p.title} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/blog-default.jpg';
+                      }}
                     />
                   </div>
                   <div>

@@ -156,7 +156,14 @@ export default function ProjectsPage() {
               <div className="clients-logos">
                 {[...clients, ...clients].map((c, idx) => (
                   <div key={`${c.name}-${idx}`} className="client-logo">
-                    <img src={c.logo} alt={c.name} />
+                    <img 
+                      src={c.logo} 
+                      alt={c.name} 
+                      style={{ 
+                        maxHeight: c.name.includes('Renaissance') ? '60px' : '90px',
+                        width: 'auto'
+                      }} 
+                    />
                   </div>
                 ))}
               </div>

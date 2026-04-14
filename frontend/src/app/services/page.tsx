@@ -9,21 +9,14 @@ export const metadata = {
 };
 
 const services = [
-  {
-    icon: Cog,
-    title: 'Engineering & Design',
-    slug: 'engineering-design',
-    image: 'engineering-design.jpg',
-    desc: 'Comprehensive engineering design solutions for oil and gas maintenance, upgrades, modifications, and facility enhancements, tailored to international standards and Nigerian local regulations.',
-    highlights: ['FEED & Detail Engineering', 'Structural Repair & Fabrication Design', 'Process, Electrical & Instrumentation System Engineering']
-  },
+  { icon: Cog, title: 'Engineering & Design', slug: 'engineering-design', image: 'engineering-design.jpg', desc: 'Comprehensive engineering design solutions for oil and gas maintenance, upgrades, modifications, and facility enhancements, tailored to international standards and Nigerian local regulations.', highlights: ['FEED & Detail Engineering', 'Structural Repair & Fabrication Design', 'Process, Electrical & Instrumentation System Engineering'] },
   { icon: Zap, title: 'Control Systems Integration', slug: 'control-systems', image: 'control-systems.jpg', desc: 'End-to-end integration of control and automation systems including SCADA, DCS, and PLC systems for optimal plant performance and safety.', highlights: ['SCADA Systems', 'DCS Integration', 'PLC Programming', 'HMI Development'] },
   { icon: Wrench, title: 'Maintenance Services', slug: 'maintenance', image: 'maintenance.jpg', desc: 'Planned and corrective maintenance programs for oil and gas equipment to maximize uptime and extend the operational lifecycle of critical assets.', highlights: ['Preventive Maintenance', 'Corrective Maintenance', 'Shutdown/Turnaround', 'Asset Management'] },
-  { icon: Package, title: 'Procurement & Supply', slug: 'procurement', image: 'procurement.jpg', desc: 'Strategic procurement of specialized materials, equipment, and components from vetted global and local suppliers with full quality assurance.', highlights: ['Equipment Sourcing', 'Vendor Management', 'Material Supply', 'Logistics Support'] },
-  { icon: Shield, title: 'Field Support Services', slug: 'field-support', image: 'field-support.png', desc: 'On-site technical support by certified engineers and technicians to ensure safe, efficient, and compliant field operations at all times.', highlights: ['Site Supervision', 'Technical Assistance', 'HSE Compliance', '24/7 Emergency Response'] },
+  { icon: Package, title: 'Procurement & Supply', slug: 'procurement', image: 'procurement.jpg', desc: 'Strategic procurement of specialized materials, and equipment, and components from vetted global and local suppliers with full quality assurance.', highlights: ['Equipment Sourcing', 'Vendor Management', 'Material Supply', 'Logistics Support'] },
+  { icon: Shield, title: 'Field Support Services', slug: 'field-support', image: 'field-support.jpg', desc: 'On-site technical support by certified engineers and technicians to ensure safe, efficient, and compliant field operations at all times.', highlights: ['Site Supervision', 'Technical Assistance', 'HSE Compliance', '24/7 Emergency Response'] },
   { icon: Gauge, title: 'Testing & Calibration', slug: 'testing', image: 'testing-calibration.jpg', desc: 'Precision testing and calibration of instrumentation and safety systems to meet all regulatory and operational performance requirements.', highlights: ['Instrument Calibration', 'Functional Testing', 'FAT/SAT Support', 'Pressure Testing'] },
-  { icon: Hammer, title: 'Equipment Installation & Commissioning', slug: 'installation', image: 'instrumentation-automation.jpg', desc: 'Full installation, hook-up, and commissioning of oil and gas equipment including rotating machinery and static equipment from mobilization to handover.', highlights: ['Mechanical Installation', 'Electrical Hook-up', 'Pre-commissioning', 'Commissioning'] },
-  { icon: Bot, title: 'Instrumentation & Automation', slug: 'automation', image: 'installation-commissioning.jpg', desc: 'Design and deployment of cutting-edge instrumentation and automation solutions to improve process efficiency and ensure operational safety.', highlights: ['Flow Measurement', 'Level & Pressure Instruments', 'Safety Instrumented Systems', 'Fire & Gas Detection'] },
+  { icon: Hammer, title: 'Equipment Installation & Commissioning', slug: 'installation', image: 'installation.jpg', desc: 'Full installation, hook-up, and commissioning of oil and gas equipment including rotating machinery and static equipment from mobilization to handover.', highlights: ['Mechanical Installation', 'Electrical Hook-up', 'Pre-commissioning', 'Commissioning'] },
+  { icon: Bot, title: 'Instrumentation & Automation', slug: 'automation', image: 'automation.jpg', desc: 'Design and deployment of cutting-edge instrumentation and automation solutions to improve process efficiency and ensure operational safety.', highlights: ['Flow Measurement', 'Level & Pressure Instruments', 'Safety Instrumented Systems', 'Fire & Gas Detection'] },
   {
     icon: Search,
     title: 'Inspection Services',

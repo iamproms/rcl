@@ -48,7 +48,7 @@ export const articles: Article[] = [
     `
   },
   {
-    slug: 'artificial-intelligence-in-oil-exploration',
+    slug: 'role-of-ai-oil-exploration',
     category: 'INDUSTRY NEWS',
     date: 'December 12, 2025',
     title: 'The Role of Artificial Intelligence in Oil Exploration',

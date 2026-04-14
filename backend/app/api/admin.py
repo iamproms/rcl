@@ -99,6 +99,9 @@ async def upload_file(
         try:
             import cloudinary
             import cloudinary.uploader
+            import tempfile
+            import os as base_os
+            
             # Parse credentials from URL
             stripped = cloudinary_url.replace("cloudinary://", "")
             api_key = stripped.split(":")[0]
@@ -111,13 +114,24 @@ async def upload_file(
                 api_secret=api_secret,
                 secure=True,
             )
+            
+            # Use a robust temp file to avoid BytesIO interface issues with Cloudinary SDK
             content = await file.read()
-            result = cloudinary.uploader.upload(
-                content,
-                folder="rcl-uploads",
-                resource_type="image",
-            )
-            return {"url": result["secure_url"]}
+            fd, temp_path = tempfile.mkstemp(suffix=base_os.path.splitext(file.filename)[1])
+            try:
+                with base_os.fdopen(fd, 'wb') as temp_file:
+                    temp_file.write(content)
+                    
+                result = cloudinary.uploader.upload(
+                    temp_path,
+                    folder="rcl-uploads",
+                    resource_type="image",
+                )
+                return {"url": result["secure_url"]}
+            finally:
+                if base_os.path.exists(temp_path):
+                    base_os.remove(temp_path)
+            
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
     else:

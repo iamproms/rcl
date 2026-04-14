@@ -76,8 +76,13 @@ async def seed():
     async with AsyncSessionLocal() as db:
         # Seed Articles
         for art_data in ARTICLES:
-            existing = await db.scalar(select(BlogPost).where(BlogPost.slug == art_data["slug"]))
-            if not existing:
+            # Check by title to handle slug changes
+            existing = await db.scalar(select(BlogPost).where(BlogPost.title == art_data["title"]))
+            if existing:
+                # Update existing article with new data (including slug)
+                for key, value in art_data.items():
+                    setattr(existing, key, value)
+            else:
                 db.add(BlogPost(**art_data))
         
         # Seed Projects

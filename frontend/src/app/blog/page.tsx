@@ -162,10 +162,16 @@ export default function BlogPage() {
               <div className="sidebar-widget">
                 <h3 className="sidebar-title"><span className="sidebar-title__bar"/>Recent Posts</h3>
                 <div className="recent-posts">
-                  {articles.slice(0, 3).map(post=>(
+                  {allArticles.slice(0, 3).map(post=>(
                     <Link key={post.slug} href={`/blog/${post.slug}`} className="recent-post">
                       <div className="recent-post__img">
-                        <img src={post.image} alt={post.title} />
+                        <img 
+                          src={post.image} 
+                          alt={post.title}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/blog-featured.jpg';
+                          }}
+                        />
                       </div>
                       <div>
                         <span className="recent-post__title">{post.title}</span>

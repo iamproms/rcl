@@ -77,7 +77,14 @@ export default async function ProjectPage({ params }: { params: { slug: string }
       <main style={{ paddingTop: '72px' }}>
 
         {/* Hero */}
-        <section className="proj-detail-hero" style={{ backgroundImage: `url(${project.featured_image || '/images/project-default.jpg'})` }}>
+        <section 
+          className="proj-detail-hero" 
+          style={{ 
+            backgroundImage: `url(${project.featured_image?.startsWith('/') && !project.featured_image.startsWith('/images') 
+                              ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${project.featured_image}` 
+                              : (project.featured_image || '/images/project-default.jpg')})` 
+          }}
+        >
           <div className="proj-detail-hero__overlay" />
           <div className="container proj-detail-hero__content">
             <div className="breadcrumb">
@@ -138,7 +145,14 @@ export default async function ProjectPage({ params }: { params: { slug: string }
                 {relatedProjects.map(project => (
                   <Link key={project.id} href={`/projects/${project.slug}`} className="project-card" style={{ textDecoration: 'none' }}>
                     <div style={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
-                      <div style={{ height: '180px', background: `url(${project.featured_image || '/images/project-default.jpg'}) center/cover` }} />
+                    <div 
+                      style={{ 
+                        height: '180px', 
+                        background: `url(${project.featured_image?.startsWith('/') && !project.featured_image.startsWith('/images') 
+                                          ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${project.featured_image}` 
+                                          : (project.featured_image || '/images/project-default.jpg')}) center/cover` 
+                      }} 
+                    />
                       <div style={{ padding: '18px' }}>
                         <span style={{ display: 'inline-block', marginBottom: '8px', padding: '4px 10px', borderRadius: '999px', background: tagColors[project.tag ?? ''] || '#FB0202', color: '#fff', fontSize: '12px' }}>
                           {project.tag || 'PROJECT'}

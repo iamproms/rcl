@@ -78,7 +78,12 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
 
             {article.featured_image && (
               <div className="article__hero-img">
-                <img src={article.featured_image} alt={article.title} />
+                <img 
+                  src={article.featured_image.startsWith('/') && !article.featured_image.startsWith('/images') 
+                       ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${article.featured_image}` 
+                       : article.featured_image} 
+                  alt={article.title} 
+                />
               </div>
             )}
 
@@ -99,7 +104,13 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               {recentArticles.slice(0, 3).map(p => (
                 <Link key={p.slug} href={`/blog/${p.slug}`} className="recent-item">
                   <div className="recent-img">
-                    <img src={p.featured_image || '/images/blog-default.jpg'} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img 
+                      src={p.featured_image?.startsWith('/') && !p.featured_image.startsWith('/images') 
+                           ? `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')}${p.featured_image}` 
+                           : (p.featured_image || '/images/blog-default.jpg')} 
+                      alt={p.title} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
                   </div>
                   <div>
                     <span className="recent-title">{p.title}</span>

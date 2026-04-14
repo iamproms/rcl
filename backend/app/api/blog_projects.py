@@ -6,9 +6,19 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.core.database import get_db
-from app.core.security import get_current_admin
+from app.core.security import get_current_admin, get_optional_admin
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
+from app.core.config import settings
+
+def resolve_image_url(image_path: Optional[str]) -> Optional[str]:
+    if not image_path:
+        return image_path
+    if image_path.startswith('/') and not image_path.startswith('/images'):
+        base_url = getattr(settings, "BASE_URL", "").rstrip("/")
+        if base_url:
+            return f"{base_url}{image_path}"
+    return image_path
 
 # ─── Schemas ────────────────────────────────────────────────
 class BlogPostCreate(BaseModel):
@@ -101,7 +111,7 @@ async def list_posts(
     limit: int = Query(10, le=50),
     skip: int = 0,
     db: AsyncSession = Depends(get_db),
-    admin: Optional[User] = Depends(get_current_admin),
+    admin: Optional[User] = Depends(get_optional_admin),
 ):
     # If admin is authenticated, show all posts; otherwise only published ones
     if admin:
@@ -113,10 +123,13 @@ async def list_posts(
         query = query.where(BlogPost.category == category)
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)
-    return result.scalars().all()
+    posts = result.scalars().all()
+    for p in posts:
+        p.featured_image = resolve_image_url(p.featured_image)
+    return posts
 
 @blog_router.get("/{post_id}", response_model=BlogPostResponse)
-async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_current_admin)):
+async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_optional_admin)):
     # Try to get by ID first (for admin access)
     try:
         post_id_int = int(post_id)
@@ -138,6 +151,7 @@ async def get_post(post_id: str, db: AsyncSession = Depends(get_db), admin: Opti
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
+    post.featured_image = resolve_image_url(post.featured_image)
     return post
 
 @blog_router.post("", response_model=BlogPostResponse, status_code=201)
@@ -146,11 +160,22 @@ async def create_post(data: BlogPostCreate, db: AsyncSession = Depends(get_db), 
     db.add(post)
     await db.commit()
     await db.refresh(post)
+    post.featured_image = resolve_image_url(post.featured_image)
     return post
 
 @blog_router.put("/{post_id}", response_model=BlogPostResponse)
-async def update_post(post_id: int, data: BlogPostUpdate, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
-    result = await db.execute(select(BlogPost).where(BlogPost.id == post_id))
+async def update_post(
+    post_id: str,
+    data: BlogPostUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    try:
+        pid_val = int(post_id)
+        result = await db.execute(select(BlogPost).where(BlogPost.id == pid_val))
+    except ValueError:
+        result = await db.execute(select(BlogPost).where(BlogPost.slug == post_id))
+        
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
@@ -158,11 +183,21 @@ async def update_post(post_id: int, data: BlogPostUpdate, db: AsyncSession = Dep
         setattr(post, k, v)
     await db.commit()
     await db.refresh(post)
+    post.featured_image = resolve_image_url(post.featured_image)
     return post
 
 @blog_router.delete("/{post_id}", status_code=204)
-async def delete_post(post_id: int, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
-    result = await db.execute(select(BlogPost).where(BlogPost.id == post_id))
+async def delete_post(
+    post_id: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    try:
+        post_id_val = int(post_id)
+        result = await db.execute(select(BlogPost).where(BlogPost.id == post_id_val))
+    except ValueError:
+        result = await db.execute(select(BlogPost).where(BlogPost.slug == post_id))
+    
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(404, "Post not found")
@@ -178,7 +213,7 @@ async def list_projects(
     category: Optional[str] = None,
     featured: Optional[bool] = None,
     db: AsyncSession = Depends(get_db),
-    admin: Optional[User] = Depends(get_current_admin),
+    admin: Optional[User] = Depends(get_optional_admin),
 ):
     # If admin is authenticated, show all projects; otherwise only active ones
     if admin:
@@ -191,10 +226,13 @@ async def list_projects(
     if featured is not None:
         query = query.where(Project.is_featured == featured)
     result = await db.execute(query)
-    return result.scalars().all()
+    projects = result.scalars().all()
+    for p in projects:
+        p.featured_image = resolve_image_url(p.featured_image)
+    return projects
 
 @projects_router.get("/{project_id}", response_model=ProjectResponse)
-async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_current_admin)):
+async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin: Optional[User] = Depends(get_optional_admin)):
     # Try to get by ID first (for admin access)
     try:
         project_id_int = int(project_id)
@@ -216,6 +254,7 @@ async def get_project(project_id: str, db: AsyncSession = Depends(get_db), admin
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "Project not found")
+    project.featured_image = resolve_image_url(project.featured_image)
     return project
 
 @projects_router.post("", response_model=ProjectResponse, status_code=201)
@@ -224,11 +263,22 @@ async def create_project(data: ProjectCreate, db: AsyncSession = Depends(get_db)
     db.add(project)
     await db.commit()
     await db.refresh(project)
+    project.featured_image = resolve_image_url(project.featured_image)
     return project
 
 @projects_router.put("/{project_id}", response_model=ProjectResponse)
-async def update_project(project_id: int, data: ProjectUpdate, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
-    result = await db.execute(select(Project).where(Project.id == project_id))
+async def update_project(
+    project_id: str,
+    data: ProjectUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    try:
+        pid_val = int(project_id)
+        result = await db.execute(select(Project).where(Project.id == pid_val))
+    except ValueError:
+        result = await db.execute(select(Project).where(Project.slug == project_id))
+        
     project = result.scalar_one_or_none()
     if not project:
         raise HTTPException(404, "Project not found")
@@ -236,6 +286,7 @@ async def update_project(project_id: int, data: ProjectUpdate, db: AsyncSession 
         setattr(project, k, v)
     await db.commit()
     await db.refresh(project)
+    project.featured_image = resolve_image_url(project.featured_image)
     return project
 
 @projects_router.patch("/{project_id}/status", response_model=ProjectResponse)
@@ -250,4 +301,22 @@ async def update_project_status(project_id: int, status: str, db: AsyncSession =
     await db.commit()
     await db.refresh(project)
     return project
+
+@projects_router.delete("/{project_id}", status_code=204)
+async def delete_project(
+    project_id: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    try:
+        pid_val = int(project_id)
+        result = await db.execute(select(Project).where(Project.id == pid_val))
+    except ValueError:
+        result = await db.execute(select(Project).where(Project.slug == project_id))
+        
+    project = result.scalar_one_or_none()
+    if not project:
+        raise HTTPException(404, "Project not found")
+    await db.delete(project)
+    await db.commit()
 

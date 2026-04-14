@@ -4,13 +4,15 @@ from sqlalchemy import select, func
 from typing import List
 import os
 import uuid
+import io
 
 from app.core.database import get_db
 from app.core.security import get_current_admin
 from app.models.content import ContactSubmission, Service, NewsletterSubscription
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
-from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate
+from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterSend
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -88,24 +90,37 @@ async def upload_file(
 ):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image files are allowed")
+
+    cloudinary_url = getattr(settings, "CLOUDINARY_URL", "")
     
-    # Create uploads directory if it doesn't exist
-    upload_dir = "static/uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    # Generate unique filename
-    file_extension = os.path.splitext(file.filename)[1]
-    unique_filename = f"{uuid.uuid4()}{file_extension}"
-    file_path = os.path.join(upload_dir, unique_filename)
-    
-    # Save file
-    with open(file_path, "wb") as buffer:
-        content = await file.read()
-        buffer.write(content)
-    
-    # Return the URL (assuming static files are served at /static/)
-    file_url = f"/static/uploads/{unique_filename}"
-    return {"url": file_url}
+    if cloudinary_url:
+        # ── Cloudinary upload (persistent) ──
+        try:
+            import cloudinary
+            import cloudinary.uploader
+            cloudinary.config(cloudinary_url=cloudinary_url)
+            content = await file.read()
+            result = cloudinary.uploader.upload(
+                io.BytesIO(content),
+                folder="rcl-uploads",
+                resource_type="image",
+            )
+            return {"url": result["secure_url"]}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")
+    else:
+        # ── Local disk fallback (dev only) ──
+        upload_dir = "static/uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        file_extension = os.path.splitext(file.filename)[1]
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        base_url = getattr(settings, "BASE_URL", "").rstrip("/")
+        file_url = f"{base_url}/static/uploads/{unique_filename}" if base_url else f"/static/uploads/{unique_filename}"
+        return {"url": file_url}
 
 
 @router.get("/subscribers")
@@ -123,12 +138,14 @@ async def get_subscribers(
 
 @router.post("/send-newsletter")
 async def send_newsletter(
-    subject: str,
-    content: str,
+    data: NewsletterSend,
     db: AsyncSession = Depends(get_db),
     admin: User = Depends(get_current_admin),
 ):
     from app.core.email import send_bulk_newsletter
+    
+    subject = data.subject
+    content = data.content
     
     # Get all subscribers
     query = select(NewsletterSubscription)

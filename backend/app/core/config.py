@@ -11,6 +11,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./rewaj.db"
+    BASE_URL: str = ""
+    CLOUDINARY_URL: str = ""
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:
@@ -29,6 +31,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "https://rewajcorporate.com",
         "https://www.rewajcorporate.com",
+        "https://rcl-frontend.vercel.app",
+        "https://rcl-frontend-iamproms.vercel.app",
     ]
 
     # Email (SendGrid)

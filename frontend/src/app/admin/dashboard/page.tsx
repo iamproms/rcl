@@ -319,29 +319,44 @@ export default function AdminDashboard() {
   });
 
   const uploadFile = async (file: File) => {
+    if (file.size > 4.5 * 1024 * 1024) {
+      setNotification(`File too large (${(file.size/1024/1024).toFixed(1)}MB). Max 4.5MB allowed.`);
+      setTimeout(() => setNotification(''), 4000);
+      return null;
+    }
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+      const url = `${process.env.NEXT_PUBLIC_API_URL || ''}/api/upload`;
+      console.log("Uploading to:", url, "Size:", file.size);
+      
+      const res = await fetch(url, {
         method: 'POST',
         headers: {'Authorization': `Bearer ${token()}`},
         body: formData
       });
+      
       if (res.ok) {
         const data = await res.json();
         return data.url;
       } else {
-        throw new Error('Upload failed');
+        const errText = await res.text();
+        console.error("Upload failed:", res.status, errText);
+        setNotification(`Upload failed: ${res.status} error.`);
+        setTimeout(() => setNotification(''), 4000);
+        return null;
       }
-    } catch (e) {
-      setNotification('File upload failed');
-      setTimeout(() => setNotification(''), 3000);
+    } catch (e: any) {
+      console.error("Upload network exception:", e);
+      setNotification(`Network error: ${e.message}`);
+      setTimeout(() => setNotification(''), 4000);
       return null;
     }
   };
 
   const handleArticleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (file) {
       const url = await uploadFile(file);
       if (url) {

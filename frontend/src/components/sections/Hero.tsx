@@ -9,8 +9,9 @@ export default function Hero() {
         <span className="hero__eyebrow">Nigeria's energy partner</span>
         <h1 className="hero__heading">
           Engineering<br />
-          <span className="hero__heading--red"> solutions</span><br />
-          for the Energy Industry
+          <span className="hero__heading--red">solutions</span> for<br />
+          the Energy<br />
+          Industry
         </h1>
         <p className="hero__subtext">
           Delivering world-class oil and gas engineering solutions, procurement

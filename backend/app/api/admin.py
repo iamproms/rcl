@@ -93,6 +93,10 @@ async def upload_file(
 
     cloudinary_url = getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")
     
+    # Auto-fix common Render copy-paste error: "CLOUDINARY_URL=cloudinary://..."
+    if cloudinary_url.startswith("CLOUDINARY_URL="):
+        cloudinary_url = cloudinary_url.replace("CLOUDINARY_URL=", "", 1)
+
     if cloudinary_url:
         # ── Cloudinary upload (persistent) ──
         # Parse cloudinary://api_key:api_secret@cloud_name

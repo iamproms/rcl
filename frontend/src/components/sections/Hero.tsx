@@ -8,10 +8,7 @@ export default function Hero() {
       <div className="container hero__content">
         <span className="hero__eyebrow">Nigeria's energy partner</span>
         <h1 className="hero__heading">
-          Engineering<br />
-          <span className="hero__heading--red">solutions</span> for<br />
-          the Energy<br />
-          Industry
+          Engineering <span className="hero__heading--red">solutions</span> for the Energy Industry
         </h1>
         <p className="hero__subtext">
           Delivering world-class oil and gas engineering solutions, procurement

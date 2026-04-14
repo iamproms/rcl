@@ -91,15 +91,26 @@ async def upload_file(
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image files are allowed")
 
-    cloudinary_url = getattr(settings, "CLOUDINARY_URL", "")
+    cloudinary_url = getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")
     
     if cloudinary_url:
         # ── Cloudinary upload (persistent) ──
+        # Parse cloudinary://api_key:api_secret@cloud_name
         try:
-            os.environ["CLOUDINARY_URL"] = cloudinary_url
             import cloudinary
             import cloudinary.uploader
-            
+            # Parse credentials from URL
+            stripped = cloudinary_url.replace("cloudinary://", "")
+            api_key = stripped.split(":")[0]
+            rest = stripped.split(":", 1)[1]
+            api_secret = rest.split("@")[0]
+            cloud_name = rest.split("@")[1]
+            cloudinary.config(
+                cloud_name=cloud_name,
+                api_key=api_key,
+                api_secret=api_secret,
+                secure=True,
+            )
             content = await file.read()
             result = cloudinary.uploader.upload(
                 content,

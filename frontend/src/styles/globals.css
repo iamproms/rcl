@@ -42,7 +42,7 @@ a { text-decoration: none; color: inherit; }
   margin: 0 auto;
   padding: 0 24px;
 }
-@media (max-width: 768px) { .container { padding: 0 16px; } }
+@media (max-width: 768px) { .container { padding: 0 24px; } }
 
 /* ── Animations ── */
 @keyframes fadeUp   { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
@@ -165,6 +165,7 @@ a { text-decoration: none; color: inherit; }
   .footer__brand { align-items: flex-start; text-align: left; }
   .footer__col { align-items: flex-start; text-align: left; }
   .footer__desc { max-width: 100%; }
+  .footer__socials { justify-content: flex-start; }
 }
 
 /* ── Hero ── */

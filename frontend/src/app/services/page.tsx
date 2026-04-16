@@ -48,7 +48,7 @@ export default function ServicesPage() {
               {services.map((svc) => (
                 <div key={svc.slug} className="service-detail-card">
                   <div className="service-detail-thumb">
-                    <img src={`/${svc.image}`} alt={`${svc.title} placeholder`} />
+                    <img src={`/images/${svc.image}`} alt={`${svc.title} placeholder`} />
                   </div>
                   <div className="service-detail-icon"><svc.icon size={40} strokeWidth={1.5} /></div>
                   <h3 className="service-detail-title">{svc.title}</h3>

@@ -43,7 +43,7 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="legacy__image">
-              <img src="/team-offshore.jpg" alt="Rewaj engineer on site" />
+              <img src="/images/team-offshore.jpg" alt="Rewaj engineer on site" />
               <div className="legacy__img-accent" />
             </div>
           </div>

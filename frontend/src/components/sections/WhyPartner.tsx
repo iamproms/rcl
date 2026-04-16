@@ -14,7 +14,7 @@ export default function WhyPartner() {
       <div className="container why-partner__inner">
         <div>
           <div className="why-partner__img-wrap">
-            <img src="/team-offshore.jpg" alt="Rewaj team on-site" className="why-partner__img" />
+            <img src="/images/team-offshore.jpg" alt="Rewaj team on-site" className="why-partner__img" />
             <div className="why-partner__badge">
               <Award className="badge__icon" size={30} />
               <div><strong>ISO Certified</strong><span>Quality Managemnet System</span></div>

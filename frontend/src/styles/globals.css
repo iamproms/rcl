@@ -290,7 +290,7 @@ a { text-decoration: none; color: inherit; }
 .cta-banner__sub { font-size: 16px; color: rgba(255,255,255,0.65); max-width: 520px; margin: 0 auto 36px; line-height: 1.7; }
 
 /* ── About Page ── */
-.about-hero { position: relative; min-height: 380px; display: flex; align-items: center; background: url('/team-offshore.jpg') center/cover no-repeat; }
+.about-hero { position: relative; min-height: 380px; display: flex; align-items: center; background: url('/images/team-offshore.jpg') center/cover no-repeat; }
 .about-hero__overlay { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.6) 100%); }
 .about-hero__content { position: relative; z-index: 1; padding: 80px 0; }
 .about-hero__title { font-family: var(--font-display); font-size: clamp(36px,5vw,60px); font-weight: 800; color: var(--white); text-transform: uppercase; line-height: 1.1; margin-bottom: 16px; }

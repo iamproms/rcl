@@ -26,12 +26,21 @@ async def ensure_project_status_column(conn):
         await conn.execute(text("ALTER TABLE projects ADD COLUMN status VARCHAR(20) DEFAULT 'active'"))
         await conn.execute(text("UPDATE projects SET status='active' WHERE status IS NULL"))
 
+async def ensure_job_id_nullable(conn):
+    dialect = conn.dialect.name
+    if dialect == "postgresql":
+        try:
+            await conn.execute(text("ALTER TABLE job_applications ALTER COLUMN job_id DROP NOT NULL;"))
+        except Exception as e:
+            print(f"Skipping job_id ALTER: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create tables and run migrations on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         await ensure_project_status_column(conn)
+        await ensure_job_id_nullable(conn)
     
     # Run seeding logic (creates admin + initial content if database is empty)
     try:

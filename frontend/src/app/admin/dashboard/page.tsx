@@ -815,7 +815,7 @@ export default function AdminDashboard() {
                       <React.Fragment key={app.id}>
                         <tr style={{cursor:'pointer'}} onClick={()=>setExpandedAppId(expandedAppId===app.id?null:app.id)}>
                           <td><p className="atitle">{app.full_name}</p><a href={`mailto:${app.email}`} style={{fontSize:'12px',color:'#3B82F6'}} onClick={e=>e.stopPropagation()}>{app.email}</a></td>
-                          <td><span className="cpill" style={{background:'#FEF2F2',color:'#FB0202'}}>{jobs.find(j=>j.id===app.job_id)?.title || `Job #${app.job_id}`}</span></td>
+                          <td><span className="cpill" style={{background:'#FEF2F2',color:'#FB0202'}}>{app.job_id ? (jobs.find(j=>j.id===app.job_id)?.title || `Job #${app.job_id}`) : 'Talent Pool'}</span></td>
                           <td style={{fontSize:'13px'}}>{app.highest_qualification}</td>
                           <td><span className="cpill" style={{background:app.nysc_status==='YES'?'#ECFDF5':'#F8FAFC',color:app.nysc_status==='YES'?'#10B981':'#475569'}}>{app.nysc_status}</span></td>
                           <td style={{fontSize:'13px',color:'#94A3B8'}}>{new Date(app.created_at).toLocaleDateString()}</td>

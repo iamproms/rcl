@@ -51,17 +51,19 @@ async def apply_to_job(
     db: AsyncSession = Depends(get_db)
 ):
     """Submit a job application with CV upload."""
-    result = await db.execute(select(Job).filter(Job.id == job_id))
-    job = result.scalars().first()
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-        
-    # Check if job is still active
-    if job.status != JobStatus.published:
-        raise HTTPException(status_code=400, detail="This job is no longer accepting applications.")
-        
-    if job.application_deadline and date.today() > job.application_deadline:
-        raise HTTPException(status_code=400, detail="The application deadline has passed.")
+    job = None
+    if job_id != 0:
+        result = await db.execute(select(Job).filter(Job.id == job_id))
+        job = result.scalars().first()
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+            
+        # Check if job is still active
+        if job.status != JobStatus.published:
+            raise HTTPException(status_code=400, detail="This job is no longer accepting applications.")
+            
+        if job.application_deadline and date.today() > job.application_deadline:
+            raise HTTPException(status_code=400, detail="The application deadline has passed.")
 
     # Validate file type
     if not cv_file.filename.endswith('.pdf'):
@@ -85,7 +87,7 @@ async def apply_to_job(
         cert_path = cert_path_full
 
     application = JobApplication(
-        job_id=job_id,
+        job_id=job_id if job_id != 0 else None,
         full_name=full_name,
         email=email,
         phone=phone,

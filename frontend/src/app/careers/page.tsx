@@ -29,7 +29,8 @@ export default function CareersPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/careers/jobs')
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+    fetch(`${apiBase}/api/careers/jobs`)
       .then(res => res.json())
       .then(data => {
         setJobs(Array.isArray(data) ? data : []);
@@ -64,7 +65,8 @@ export default function CareersPage() {
     if (certFile) data.append('cert_file', certFile);
 
     try {
-      const res = await fetch('http://localhost:8000/api/careers/apply', {
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+      const res = await fetch(`${apiBase}/api/careers/apply`, {
         method: 'POST',
         body: data,
       });

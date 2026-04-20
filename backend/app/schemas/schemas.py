@@ -132,7 +132,7 @@ class JobResponse(JobBase):
         from_attributes = True
 
 class JobApplicationCreate(BaseModel):
-    job_id: int
+    job_id: Optional[int] = None
     full_name: str = Field(..., max_length=255)
     email: EmailStr
     phone: str = Field(..., max_length=50)

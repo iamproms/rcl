@@ -88,3 +88,67 @@ class NewsletterResponse(BaseModel):
 class NewsletterSend(BaseModel):
     subject: str
     content: str
+
+# --- Careers ---
+from datetime import date
+
+class JobBase(BaseModel):
+    title: str = Field(..., min_length=2, max_length=255)
+    department: str = Field(..., max_length=100)
+    location: str = Field(..., max_length=255)
+    job_type: str = Field(..., max_length=100)
+    summary: Optional[str] = None
+    responsibilities: str
+    requirements: str
+    qualifications: str
+    application_deadline: date
+    expiry_date: Optional[date] = None
+    internal_notes: Optional[str] = None
+    status: str = "Draft"
+
+class JobCreate(JobBase):
+    pass
+
+class JobUpdate(BaseModel):
+    title: Optional[str] = None
+    department: Optional[str] = None
+    location: Optional[str] = None
+    job_type: Optional[str] = None
+    summary: Optional[str] = None
+    responsibilities: Optional[str] = None
+    requirements: Optional[str] = None
+    qualifications: Optional[str] = None
+    application_deadline: Optional[date] = None
+    expiry_date: Optional[date] = None
+    internal_notes: Optional[str] = None
+    status: Optional[str] = None
+
+class JobResponse(JobBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class JobApplicationCreate(BaseModel):
+    job_id: int
+    full_name: str = Field(..., max_length=255)
+    email: EmailStr
+    phone: str = Field(..., max_length=50)
+    dob: date
+    gender: str = Field(..., max_length=50)
+    nationality: str = Field(..., max_length=100)
+    highest_qualification: str = Field(..., max_length=100)
+    institution: str = Field(..., max_length=255)
+    course_of_study: str = Field(..., max_length=255)
+    nysc_status: str = Field(..., max_length=50)
+    
+class JobApplicationResponse(JobApplicationCreate):
+    id: int
+    cv_path: str
+    certifications_path: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -6,7 +6,7 @@ from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import contact, auth, services, admin, newsletter
+from app.api import contact, auth, services, admin, newsletter, career
 from app.api.blog_projects import blog_router, projects_router
 from seed_content import seed
 
@@ -68,6 +68,7 @@ app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(blog_router, prefix="/api/blog", tags=["Blog"])
 app.include_router(projects_router, prefix="/api/projects", tags=["Projects"])
 app.include_router(newsletter.router, prefix="/api/newsletter", tags=["Newsletter"])
+app.include_router(career.router, prefix="/api/careers", tags=["Careers"])
 
 # Direct upload route to match frontend
 from app.api.admin import upload_file

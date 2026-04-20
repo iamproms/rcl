@@ -9,13 +9,14 @@ const navLinks = [
   { label: 'About Us', href: '/about' },
   { label: 'Projects', href: '/projects' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Careers', href: '/careers' },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isLight = ['/contact','/blog','/projects','/about','/services'].some(p => pathname === p || pathname.startsWith(p + '/'));
+  const isLight = ['/contact','/blog','/projects','/about','/services', '/careers'].some(p => pathname === p || pathname.startsWith(p + '/'));
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);

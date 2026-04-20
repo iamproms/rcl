@@ -1,11 +1,13 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Stats { total_messages: number; unread_messages: number; total_articles: number; total_projects: number; }
 interface Message { id: number; name: string; email: string; company?: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
 interface Article { id: number; title: string; slug: string; category: string; content?: string; excerpt?: string; author?: string; featured_image?: string; is_published: boolean; created_at: string; }
 interface Project { id: number; title: string; slug: string; category: string; description?: string; client_name?: string; completion_year: string; featured_image?: string; status?: string; is_active: boolean; }
+interface Job { id: number; title: string; department: string; location: string; job_type: string; summary?: string; responsibilities: string; requirements: string; qualifications: string; application_deadline: string; expiry_date?: string; internal_notes?: string; status: string; created_at: string; updated_at?: string; }
+interface JobApplication { id: number; job_id: number; full_name: string; email: string; phone: string; dob: string; gender: string; nationality: string; highest_qualification: string; institution: string; course_of_study: string; nysc_status: string; cv_path: string; certifications_path?: string; created_at: string; }
 
 const TAG_COLORS: Record<string,string> = { PARTNERSHIP:'#10B981', URGENT:'#EF4444', 'QUOTE REQ':'#F97316', CAREERS:'#6366F1' };
 
@@ -30,6 +32,14 @@ export default function AdminDashboard() {
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article|null>(null);
   const [editingProject, setEditingProject] = useState<Project|null>(null);
+  
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [jobForm, setJobForm] = useState({title:'',department:'',location:'',job_type:'',summary:'',responsibilities:'',requirements:'',qualifications:'',application_deadline:'',expiry_date:'',internal_notes:'',status:'Draft'});
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job|null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<JobApplication|null>(null);
+  const [expandedAppId, setExpandedAppId] = useState<number|null>(null);
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
@@ -42,8 +52,11 @@ export default function AdminDashboard() {
     if (!url) return '';
     if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
     if (url.startsWith('/images/')) return url; // Seeder images
+    
     const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
-    return `${apiBase}${url}`;
+    // Ensure url starts with a slash
+    const normalizedUrl = url.startsWith('/') ? url : `/${url}`;
+    return `${apiBase}${normalizedUrl}`;
   };
 
   const fetchData = useCallback(async () => {
@@ -54,17 +67,21 @@ export default function AdminDashboard() {
       'Content-Type': 'application/json'
     };
     try {
-      const [sRes, mRes, aRes, pRes] = await Promise.all([
+      const [sRes, mRes, aRes, pRes, jRes, appRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, { headers: _hdrs }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/messages`, { headers: _hdrs }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog`, { headers: _hdrs }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`, { headers: _hdrs }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/admin/jobs`, { headers: _hdrs }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/admin/applications`, { headers: _hdrs }),
       ]);
       if (sRes.status === 401) { router.push('/admin'); return; }
       setStats(await sRes.json());
       setMessages(await mRes.json());
       setArticles(await aRes.json());
       setProjects(await pRes.json());
+      setJobs(await jRes.json());
+      setApplications(await appRes.json());
     } catch(e) {} finally { setLoading(false); }
   }, []);
 
@@ -112,6 +129,71 @@ export default function AdminDashboard() {
       setNotification('Error updating project status');
       setTimeout(() => setNotification(''), 3000);
     }
+  };
+
+  const deleteJob = async (id:number) => {
+    if(!confirm('Delete this job?')) return;
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/${id}`,{method:'DELETE',headers:hdrs()});
+    setJobs(prev=>prev.filter(j=>j.id!==id));
+  };
+  
+  const updateJobStatus = async (id: number, newStatus: string) => {
+    try {
+      const targetJob = jobs.find(j => j.id === id);
+      if (!targetJob) return;
+      const payload = { ...targetJob, status: newStatus };
+      if (!payload.expiry_date) delete payload.expiry_date;
+      if (!payload.internal_notes) delete payload.internal_notes;
+      if (!payload.updated_at) delete payload.updated_at;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/${id}`, {
+        method: 'PUT',
+        headers: hdrs(),
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setJobs(prev => prev.map(j => j.id === id ? { ...j, status: updated.status } : j));
+        setNotification('Job status updated!');
+        setTimeout(() => setNotification(''), 3000);
+      }
+    } catch(e) {}
+  };
+
+  const createJob = async () => {
+    if(!jobForm.title.trim() || !jobForm.application_deadline) return;
+    try {
+      const method = editingJob ? 'PUT' : 'POST';
+      const url = editingJob ? `${process.env.NEXT_PUBLIC_API_URL}/api/careers/${editingJob.id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/careers/`;
+      
+      const payload = { ...jobForm };
+      if (!payload.expiry_date) delete (payload as any).expiry_date;
+      if (!payload.internal_notes) delete (payload as any).internal_notes;
+
+      const res = await fetch(url, {
+        method, headers: hdrs(), body: JSON.stringify(payload)
+      });
+      if(res.ok) {
+        const updatedJob = await res.json();
+        if(editingJob) setJobs(prev=>prev.map(j=>j.id===editingJob.id?updatedJob:j));
+        else setJobs(prev=>[updatedJob,...prev]);
+        setNotification(`Job ${editingJob?'updated':'created'} successfully!`);
+        setShowJobForm(false);
+        setEditingJob(null);
+        setJobForm({title:'',department:'',location:'',job_type:'',summary:'',responsibilities:'',requirements:'',qualifications:'',application_deadline:'',expiry_date:'',internal_notes:'',status:'Draft'});
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){}
+  };
+
+  const editJob = (job: Job) => {
+    setJobForm({
+      title: job.title, department: job.department, location: job.location, job_type: job.job_type,
+      summary: job.summary || '', responsibilities: job.responsibilities, requirements: job.requirements, qualifications: job.qualifications,
+      application_deadline: job.application_deadline, expiry_date: job.expiry_date || '', internal_notes: job.internal_notes || '', status: job.status
+    });
+    setEditingJob(job);
+    setShowJobForm(true);
   };
 
   const createArticle = async () => {
@@ -378,7 +460,7 @@ export default function AdminDashboard() {
 
   const navItems = [
     {icon:'📊',label:'Dashboard'},{icon:'🔍',label:'Search'},{icon:'📝',label:'Articles'},{icon:'🏗️',label:'Projects'},
-    {icon:'✉️',label:'Inbox',badge:stats?.unread_messages},{icon:'📧',label:'Newsletter'},{icon:'⚙️',label:'Settings'},
+    {icon:'💼',label:'Jobs',badge:applications.length},{icon:'✉️',label:'Inbox',badge:stats?.unread_messages},{icon:'📧',label:'Newsletter'},{icon:'⚙️',label:'Settings'},
   ];
 
   if(loading) return (
@@ -668,6 +750,111 @@ export default function AdminDashboard() {
                       </tr>
                     ))}
                     {filteredProjects.length===0 && <tr><td colSpan={5} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No matching projects.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeNav==='Jobs'&&(
+            <div>
+              <div className="cheader"><div><h1 className="ctitle">Careers & Jobs</h1><p className="csub">Manage job postings and view applications.</p></div><button className="btnprimary" onClick={()=>setShowJobForm(!showJobForm)}>+ New Job</button></div>
+              {showJobForm && (
+                <div className="panel" style={{marginBottom:'20px',padding:'20px'}}>
+                  <h3 style={{marginBottom:'16px'}}>{editingJob ? 'Edit Job' : 'Create New Job'}</h3>
+                  <div className="fr2">
+                    <div className="fgroup" style={{marginBottom:'12px'}}><label>Title *</label><input value={jobForm.title} onChange={e=>setJobForm(p=>({...p,title:e.target.value}))} placeholder="Job Title" /></div>
+                    <div className="fgroup" style={{marginBottom:'12px'}}><label>Location *</label><input value={jobForm.location} onChange={e=>setJobForm(p=>({...p,location:e.target.value}))} placeholder="Port Harcourt, Nigeria" /></div>
+                  </div>
+                  <div className="fr2">
+                    <div className="fgroup" style={{marginBottom:'12px'}}><label>Department *</label><input value={jobForm.department} onChange={e=>setJobForm(p=>({...p,department:e.target.value}))} placeholder="Engineering" /></div>
+                    <div className="fgroup" style={{marginBottom:'12px'}}><label>Job Type *</label><input value={jobForm.job_type} onChange={e=>setJobForm(p=>({...p,job_type:e.target.value}))} placeholder="Full-Time" /></div>
+                  </div>
+                  <div className="fr2">
+                    <div className="fgroup" style={{marginBottom:'12px'}}><label>Application Deadline *</label><input type="date" value={jobForm.application_deadline} onChange={e=>setJobForm(p=>({...p,application_deadline:e.target.value}))} /></div>
+                    <div className="fgroup" style={{marginBottom:'12px'}}><label>Status</label><select value={jobForm.status} onChange={e=>setJobForm(p=>({...p,status:e.target.value}))} style={{padding:'10px',border:'1px solid #CBD5E1',borderRadius:'4px'}}><option value="Draft">Draft</option><option value="Published">Published</option><option value="Archived">Archived</option></select></div>
+                  </div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Job Summary</label><textarea value={jobForm.summary} onChange={e=>setJobForm(p=>({...p,summary:e.target.value}))} placeholder="A short 1-2 sentence overview of the role" rows={2} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Responsibilities *</label><textarea value={jobForm.responsibilities} onChange={e=>setJobForm(p=>({...p,responsibilities:e.target.value}))} placeholder="List of responsibilities" rows={3} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Requirements *</label><textarea value={jobForm.requirements} onChange={e=>setJobForm(p=>({...p,requirements:e.target.value}))} placeholder="List of requirements" rows={3} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Qualifications *</label><textarea value={jobForm.qualifications} onChange={e=>setJobForm(p=>({...p,qualifications:e.target.value}))} placeholder="Qualifications" rows={2} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Internal Notes</label><textarea value={jobForm.internal_notes} onChange={e=>setJobForm(p=>({...p,internal_notes:e.target.value}))} placeholder="For internal HR use" rows={2} /></div>
+                  <div style={{display:'flex',gap:'10px'}}>
+                    <button className="btnprimary" onClick={createJob}>{editingJob ? 'Update Job' : 'Create Job'}</button>
+                    <button onClick={()=>{setShowJobForm(false);setEditingJob(null);setJobForm({title:'',department:'',location:'',job_type:'',summary:'',responsibilities:'',requirements:'',qualifications:'',application_deadline:'',expiry_date:'',internal_notes:'',status:'Draft'});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="panel" style={{marginBottom:'24px'}}>
+                <div className="ph"><h3 className="ptitle">JOB POSTINGS</h3></div>
+                <table className="atable" style={{width:'100%'}}>
+                  <thead><tr><th>JOB TITLE</th><th>DEPARTMENT</th><th>LOCATION</th><th>DEADLINE</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                  <tbody>
+                    {jobs.map(j=>(
+                      <tr key={j.id}>
+                        <td><p className="atitle">{j.title}</p></td>
+                        <td><span className="cpill">{j.department}</span></td>
+                        <td><span className="cpill" style={{background:'#F1F5F9',color:'#475569'}}>{j.location}</span></td>
+                        <td style={{fontSize:'13px',color:'#94A3B8'}}>{new Date(j.application_deadline).toLocaleDateString()}</td>
+                        <td><select value={j.status} onChange={e => updateJobStatus(j.id, e.target.value)} style={{padding:'6px 10px',border:'1px solid #CBD5E1',borderRadius:'4px',fontSize:'13px',cursor:'pointer',background:'white'}}><option value="Draft">Draft</option><option value="Published">Published</option><option value="Archived">Archived</option></select></td>
+                        <td><button className="dicon" onClick={()=>editJob(j)}>✏️</button><button className="dicon" onClick={()=>deleteJob(j.id)}>🗑</button></td>
+                      </tr>
+                    ))}
+                    {jobs.length===0 && <tr><td colSpan={6} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No job postings found.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="panel">
+                <div className="ph"><h3 className="ptitle">JOB APPLICATIONS ({applications.length})</h3></div>
+                <table className="atable" style={{width:'100%'}}>
+                  <thead><tr><th>APPLICANT</th><th>APPLIED FOR</th><th>DEGREE</th><th>NYSC</th><th>DATE</th><th>ACTIONS</th></tr></thead>
+                  <tbody>
+                    {applications.map(app=>(
+                      <React.Fragment key={app.id}>
+                        <tr style={{cursor:'pointer'}} onClick={()=>setExpandedAppId(expandedAppId===app.id?null:app.id)}>
+                          <td><p className="atitle">{app.full_name}</p><a href={`mailto:${app.email}`} style={{fontSize:'12px',color:'#3B82F6'}} onClick={e=>e.stopPropagation()}>{app.email}</a></td>
+                          <td><span className="cpill" style={{background:'#FEF2F2',color:'#FB0202'}}>{jobs.find(j=>j.id===app.job_id)?.title || `Job #${app.job_id}`}</span></td>
+                          <td style={{fontSize:'13px'}}>{app.highest_qualification}</td>
+                          <td><span className="cpill" style={{background:app.nysc_status==='YES'?'#ECFDF5':'#F8FAFC',color:app.nysc_status==='YES'?'#10B981':'#475569'}}>{app.nysc_status}</span></td>
+                          <td style={{fontSize:'13px',color:'#94A3B8'}}>{new Date(app.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
+                                <a href={resolveImageUrl(app.cv_path)} target="_blank" rel="noreferrer" style={{color:'#6366F1',fontSize:'13px',textDecoration:'none',fontWeight:600}} onClick={e=>e.stopPropagation()}>CV ↗</a>
+                                {app.certifications_path && <a href={resolveImageUrl(app.certifications_path)} target="_blank" rel="noreferrer" style={{color:'#6366F1',fontSize:'13px',textDecoration:'none',fontWeight:600}} onClick={e=>e.stopPropagation()}>Cert ↗</a>}
+                                <span style={{fontSize:'14px',color:'#94A3B8'}}>{expandedAppId===app.id?'▴':'▾'}</span>
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedAppId === app.id && (
+                          <tr>
+                            <td colSpan={6} style={{padding:'20px',background:'#F8FAFC'}}>
+                               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))',gap:'20px'}}>
+                                  <div>
+                                    <p style={{fontSize:'11px',fontWeight:700,color:'#94A3B8',marginBottom:'4px'}}>CONTACT</p>
+                                    <p style={{fontSize:'13.5px'}}>{app.phone}</p>
+                                  </div>
+                                  <div>
+                                    <p style={{fontSize:'11px',fontWeight:700,color:'#94A3B8',marginBottom:'4px'}}>NATIONALITY / GENDER</p>
+                                    <p style={{fontSize:'13.5px'}}>{app.nationality} • {app.gender}</p>
+                                  </div>
+                                  <div>
+                                    <p style={{fontSize:'11px',fontWeight:700,color:'#94A3B8',marginBottom:'4px'}}>DATE OF BIRTH</p>
+                                    <p style={{fontSize:'13.5px'}}>{new Date(app.dob).toLocaleDateString()}</p>
+                                  </div>
+                                  <div>
+                                    <p style={{fontSize:'11px',fontWeight:700,color:'#94A3B8',marginBottom:'4px'}}>INSTITUTION / COURSE</p>
+                                    <p style={{fontSize:'13.5px',fontWeight:600}}>{app.institution}</p>
+                                    <p style={{fontSize:'12px',color:'#64748B'}}>{app.course_of_study}</p>
+                                  </div>
+                               </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                    {applications.length===0 && <tr><td colSpan={6} style={{padding:'40px',textAlign:'center',color:'#94A3B8'}}>No applications received yet.</td></tr>}
                   </tbody>
                 </table>
               </div>

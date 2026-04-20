@@ -123,30 +123,30 @@ export default function CareersPage() {
               <div className="section-divider" style={{ margin: '0 auto' }}></div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', marginBottom: '80px' }}>
-              <div className="service-card" style={{ background: 'var(--bg-lighter)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '80px' }}>
+              <div className="service-card" style={{ background: 'var(--bg-lighter)', height: '100%' }}>
                 <Shield size={36} color="var(--red)" style={{ marginBottom: '16px' }} />
                 <h3 className="service-card__title">Safety-First Culture</h3>
                 <p className="service-card__desc">We operate with zero tolerance for compromise. Every team member is empowered to speak up and every project is delivered with zero Lost Time Incidents (LTI).</p>
               </div>
-              <div className="service-card" style={{ background: 'var(--bg-lighter)' }}>
+              <div className="service-card" style={{ background: 'var(--bg-lighter)', height: '100%' }}>
                 <Award size={36} color="var(--red)" style={{ marginBottom: '16px' }} />
                 <h3 className="service-card__title">Technical Excellence</h3>
                 <p className="service-card__desc">Partner with leading OEMs and deploy cutting-edge engineering solutions across major installations.</p>
               </div>
-              <div className="service-card" style={{ background: 'var(--bg-lighter)' }}>
+              <div className="service-card" style={{ background: 'var(--bg-lighter)', height: '100%' }}>
                 <TrendingUp size={36} color="var(--red)" style={{ marginBottom: '16px' }} />
                 <h3 className="service-card__title">Career Growth</h3>
                 <p className="service-card__desc">Continuous learning, certifications, and exposure to complex engineering systems.</p>
               </div>
-              <div className="service-card" style={{ background: 'var(--bg-lighter)' }}>
+              <div className="service-card" style={{ background: 'var(--bg-lighter)', height: '100%' }}>
                 <Briefcase size={36} color="var(--red)" style={{ marginBottom: '16px' }} />
                 <h3 className="service-card__title">Work That Matters</h3>
                 <p className="service-card__desc">Your work directly supports major operators like TotalEnergies, SNEPCO, RAEC, and NLNG on critical offshore and onshore projects.</p>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', gap: '40px', alignItems: 'center' }}>
+            <div className="careers-benefits-grid">
               <div>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: 'var(--text-heading)', marginBottom: '24px' }}>Perks & Benefits</h3>
                 <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -257,19 +257,19 @@ export default function CareersPage() {
 
       {/* Application Modal */}
       {selectedJob && (
-         <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(4px)' }} onClick={() => setSelectedJob(null)} />
-            <div style={{ position: 'relative', background: 'var(--white)', width: '100%', maxWidth: '700px', borderRadius: '12px', maxHeight: '90vh', overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
+         <div className="modal-overlay">
+            <div className="modal-backdrop" onClick={() => setSelectedJob(null)} />
+            <div className="modal-content">
                
-               <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'var(--white)', zIndex: 10 }}>
+               <div className="modal-header">
                  <div>
-                   <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800 }}>Apply: {selectedJob.title}</h3>
-                   {selectedJob.id !== 0 && <span style={{ fontSize: '13px', color: 'var(--slate-500)' }}>{selectedJob.location} • {selectedJob.job_type}</span>}
+                   <h3 className="modal-title">Apply: {selectedJob.title}</h3>
+                   {selectedJob.id !== 0 && <span className="modal-subtitle">{selectedJob.location} • {selectedJob.job_type}</span>}
                  </div>
-                 <button onClick={() => setSelectedJob(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)' }}><X size={24} /></button>
+                 <button onClick={() => setSelectedJob(null)} className="modal-close"><X size={24} /></button>
                </div>
 
-               <div style={{ padding: '32px 24px' }}>
+               <div className="modal-body">
                   {successMsg ? (
                     <div className="alert alert--success" style={{ marginBottom: '32px' }}>
                       <h4 style={{ fontWeight: 800, marginBottom: '8px', color: '#166534' }}>{successMsg}</h4>

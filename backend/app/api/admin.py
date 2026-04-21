@@ -11,7 +11,7 @@ from app.core.security import get_current_admin
 from app.models.content import ContactSubmission, Service, NewsletterSubscription
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
-from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterSend, UserResponse, ProfileUpdate, PasswordChange
+from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterResponse, NewsletterSend, UserResponse, ProfileUpdate, PasswordChange
 from app.core.config import settings
 from app.core.upload import upload_to_cloudinary, save_local_file
 
@@ -143,6 +143,39 @@ async def send_newsletter(
     await send_bulk_newsletter(subscribers, subject, content)
     
     return {"message": f"Newsletter sent to {len(subscribers)} subscribers"}
+
+
+@router.post("/subscribers", response_model=NewsletterResponse)
+async def add_subscriber(
+    data: NewsletterCreate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    query = await db.execute(select(NewsletterSubscription).where(NewsletterSubscription.email == data.email))
+    existing = query.scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=409, detail="Email already subscribed")
+
+    subscription = NewsletterSubscription(email=data.email)
+    db.add(subscription)
+    await db.commit()
+    await db.refresh(subscription)
+    return subscription
+
+
+@router.delete("/subscribers/{subscriber_id}", status_code=204)
+async def remove_subscriber(
+    subscriber_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    result = await db.execute(select(NewsletterSubscription).where(NewsletterSubscription.id == subscriber_id))
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+    await db.delete(sub)
+    await db.commit()
+
 
 @router.get("/profile", response_model=UserResponse)
 async def get_profile(admin: User = Depends(get_current_admin)):

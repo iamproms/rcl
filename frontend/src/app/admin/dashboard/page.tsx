@@ -28,7 +28,8 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [newsletterSubject, setNewsletterSubject] = useState('');
   const [newsletterContent, setNewsletterContent] = useState('');
-  const [subscribers, setSubscribers] = useState([]);
+  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [newSubEmail, setNewSubEmail] = useState('');
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article|null>(null);
   const [editingProject, setEditingProject] = useState<Project|null>(null);
@@ -488,6 +489,43 @@ export default function AdminDashboard() {
       fetchProfile();
     }
   }, [activeNav]);
+
+  const addSubscriber = async () => {
+    if(!newSubEmail || !newSubEmail.includes('@')) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/subscribers`, {
+        method:'POST',
+        headers: hdrs(),
+        body: JSON.stringify({ email: newSubEmail })
+      });
+      if(res.ok) {
+        setNotification('Subscriber added successfully!');
+        setNewSubEmail('');
+        fetchSubscribers();
+      } else {
+        const error = await res.json();
+        setNotification(`Error: ${error.detail || 'Could not add subscriber'}`);
+      }
+    } catch(err) {
+      setNotification('Failed to add subscriber');
+    }
+  };
+
+  const removeSubscriber = async (id: number) => {
+    if(!confirm('Are you sure you want to remove this subscriber?')) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/subscribers/${id}`, {
+        method:'DELETE',
+        headers: hdrs()
+      });
+      if(res.ok) {
+        setNotification('Subscriber removed');
+        fetchSubscribers();
+      }
+    } catch(err) {
+      setNotification('Failed to remove subscriber');
+    }
+  };
 
   const sendNewsletter = async () => {
     if (!newsletterSubject.trim() || !newsletterContent.trim()) {
@@ -1042,6 +1080,24 @@ export default function AdminDashboard() {
               <div className="dgrid">
                 <div className="panel">
                   <div className="ph"><h3 className="ptitle">SUBSCRIBERS</h3><span className="live">{subscribers.length}</span></div>
+                  <div style={{padding:'20px', borderBottom:'1px solid var(--border)', background:'#F8FAFC'}}>
+                    <div style={{display:'flex', gap:'10px'}}>
+                      <input 
+                        style={{flex:1, padding:'8px 12px', border:'1.5px solid var(--border)', borderRadius:'6px', fontSize:'14px'}}
+                        placeholder="Add subscriber email..."
+                        value={newSubEmail}
+                        onChange={e => setNewSubEmail(e.target.value)}
+                      />
+                      <button 
+                        className="btnprimary" 
+                        style={{padding:'8px 20px'}}
+                        onClick={addSubscriber}
+                        disabled={!newSubEmail.includes('@')}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
                   <div style={{maxHeight:'300px',overflowY:'auto'}}>
                     {subscribers.length === 0 ? (
                       <p style={{padding:'20px',textAlign:'center',color:'#94A3B8'}}>No subscribers yet.</p>
@@ -1052,6 +1108,13 @@ export default function AdminDashboard() {
                             <p style={{fontSize:'14px',fontWeight:600,color:'var(--text-heading)'}}>{sub.email}</p>
                             <p style={{fontSize:'12px',color:'var(--slate-400)'}}>{new Date(sub.created_at).toLocaleDateString()}</p>
                           </div>
+                          <button 
+                            className="dicon" 
+                            style={{color:'#EF4444', padding:'8px', background:'transparent', border:'none', cursor:'pointer'}} 
+                            onClick={() => removeSubscriber(sub.id)}
+                          >
+                            🗑️
+                          </button>
                         </div>
                       ))
                     )}

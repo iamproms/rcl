@@ -251,7 +251,7 @@ export default function CareersPage() {
         <section style={{ 
             position: 'relative', 
             padding: '100px 0', 
-            background: 'url(/images/team-offshore.jpg) center/cover no-repeat', 
+            background: 'url(/images/Talent-Pool-Image.jpeg) center/cover no-repeat', 
             textAlign: 'center',
             overflow: 'hidden',
             borderTop: '1px solid rgba(255,255,255,0.1)'

@@ -151,3 +151,19 @@ async def delete_job(job_id: int, db: AsyncSession = Depends(get_db), admin: Use
 async def get_all_applications(db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
     result = await db.execute(select(JobApplication).order_by(JobApplication.created_at.desc()))
     return result.scalars().all()
+
+@router.delete("/admin/applications/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_application(application_id: int, db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
+    result = await db.execute(select(JobApplication).filter(JobApplication.id == application_id))
+    application = result.scalars().first()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    await db.delete(application)
+    await db.commit()
+
+@router.delete("/admin/applications/clear-all", status_code=status.HTTP_204_NO_CONTENT)
+async def clear_all_applications(db: AsyncSession = Depends(get_db), admin: User = Depends(get_current_admin)):
+    from sqlalchemy import delete
+    await db.execute(delete(JobApplication))
+    await db.commit()

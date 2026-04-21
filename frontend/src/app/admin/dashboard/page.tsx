@@ -40,6 +40,11 @@ export default function AdminDashboard() {
   const [editingJob, setEditingJob] = useState<Job|null>(null);
   const [selectedApplication, setSelectedApplication] = useState<JobApplication|null>(null);
   const [expandedAppId, setExpandedAppId] = useState<number|null>(null);
+  
+  const [profileForm, setProfileForm] = useState({full_name:'',email:''});
+  const [passwordForm, setPasswordForm] = useState({old_password:'',new_password:'',confirm_password:''});
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [changingPass, setChangingPass] = useState(false);
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
@@ -142,9 +147,9 @@ export default function AdminDashboard() {
       const targetJob = jobs.find(j => j.id === id);
       if (!targetJob) return;
       const payload = { ...targetJob, status: newStatus };
-      if (!payload.expiry_date) delete payload.expiry_date;
-      if (!payload.internal_notes) delete payload.internal_notes;
-      if (!payload.updated_at) delete payload.updated_at;
+      if (!payload.expiry_date) delete (payload as any).expiry_date;
+      if (!payload.internal_notes) delete (payload as any).internal_notes;
+      if (!(payload as any).updated_at) delete (payload as any).updated_at;
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/${id}`, {
         method: 'PUT',
@@ -158,6 +163,84 @@ export default function AdminDashboard() {
         setTimeout(() => setNotification(''), 3000);
       }
     } catch(e) {}
+  };
+
+  const deleteApplication = async (id:number) => {
+    if(!confirm('Delete this application?')) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/admin/applications/${id}`,{method:'DELETE',headers:hdrs()});
+      if(res.ok) {
+        setApplications(prev=>prev.filter(a=>a.id!==id));
+        if(expandedAppId===id) setExpandedAppId(null);
+        setNotification('Application deleted');
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){}
+  };
+
+  const clearAllApplications = async () => {
+    if(!confirm('Are you sure you want to delete ALL applications? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/careers/admin/applications/clear-all`,{method:'DELETE',headers:hdrs()});
+      if(res.ok) {
+        setApplications([]);
+        setExpandedAppId(null);
+        setNotification('All applications cleared');
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){}
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile`, { headers: hdrs() });
+      if (res.ok) {
+        const data = await res.json();
+        setProfileForm({ full_name: data.full_name, email: data.email });
+      }
+    } catch(e){}
+  };
+
+  const updateProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile`, {
+        method: 'PATCH',
+        headers: hdrs(),
+        body: JSON.stringify({ full_name: profileForm.full_name, email: profileForm.email })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotification('Profile updated successfully!');
+        if (typeof window !== 'undefined') localStorage.setItem('rcl_user', data.email);
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){} finally { setSavingProfile(false); }
+  };
+
+  const changePassword = async () => {
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      setNotification('Passwords do not match');
+      setTimeout(()=>setNotification(''),3000);
+      return;
+    }
+    setChangingPass(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/profile/password`, {
+        method: 'PATCH',
+        headers: hdrs(),
+        body: JSON.stringify({ old_password: passwordForm.old_password, new_password: passwordForm.new_password })
+      });
+      if (res.ok) {
+        setNotification('Password changed successfully!');
+        setPasswordForm({old_password:'',new_password:'',confirm_password:''});
+        setTimeout(()=>setNotification(''),3000);
+      } else {
+        const err = await res.json();
+        setNotification(err.detail || 'Change password failed');
+        setTimeout(()=>setNotification(''),3000);
+      }
+    } catch(e){} finally { setChangingPass(false); }
   };
 
   const createJob = async () => {
@@ -343,6 +426,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (activeNav === 'Newsletter') {
       fetchSubscribers();
+    }
+    if (activeNav === 'Settings') {
+      fetchProfile();
     }
   }, [activeNav]);
 
@@ -807,7 +893,17 @@ export default function AdminDashboard() {
               </div>
 
               <div className="panel">
-                <div className="ph"><h3 className="ptitle">JOB APPLICATIONS ({applications.length})</h3></div>
+                <div className="ph">
+                  <h3 className="ptitle">JOB APPLICATIONS ({applications.length})</h3>
+                  {applications.length > 0 && (
+                    <button 
+                      onClick={clearAllApplications}
+                      style={{background:'#FEF2F2',color:'#EF4444',border:'1px solid #FEE2E2',padding:'6px 12px',borderRadius:'4px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}
+                    >
+                      CLEAR ALL
+                    </button>
+                  )}
+                </div>
                 <table className="atable" style={{width:'100%'}}>
                   <thead><tr><th>APPLICANT</th><th>APPLIED FOR</th><th>DEGREE</th><th>NYSC</th><th>DATE</th><th>ACTIONS</th></tr></thead>
                   <tbody>
@@ -823,6 +919,7 @@ export default function AdminDashboard() {
                             <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
                                 <a href={resolveImageUrl(app.cv_path)} target="_blank" rel="noreferrer" style={{color:'#6366F1',fontSize:'13px',textDecoration:'none',fontWeight:600}} onClick={e=>e.stopPropagation()}>CV ↗</a>
                                 {app.certifications_path && <a href={resolveImageUrl(app.certifications_path)} target="_blank" rel="noreferrer" style={{color:'#6366F1',fontSize:'13px',textDecoration:'none',fontWeight:600}} onClick={e=>e.stopPropagation()}>Cert ↗</a>}
+                                <button className="dicon" style={{color:'#EF4444'}} onClick={(e)=>{e.stopPropagation(); deleteApplication(app.id);}}>🗑</button>
                                 <span style={{fontSize:'14px',color:'#94A3B8'}}>{expandedAppId===app.id?'▴':'▾'}</span>
                             </div>
                           </td>
@@ -919,12 +1016,44 @@ export default function AdminDashboard() {
           {activeNav==='Settings'&&(
             <div>
               <div className="cheader"><div><h1 className="ctitle">Settings</h1><p className="csub">Manage account and website settings.</p></div></div>
-              <div className="panel" style={{padding:'32px'}}>
+              <div className="panel" style={{padding:'32px', maxWidth: '800px'}}>
                 <h3 style={{fontFamily:'var(--font-display)',fontSize:'18px',fontWeight:800,marginBottom:'20px',color:'var(--text-heading)'}}>Account Information</h3>
-                <div className="fr2"><div className="fgroup"><label>Email Address</label><input defaultValue={userEmail()||'admin@rewajcorporate.com'} readOnly /></div><div className="fgroup"><label>Full Name</label><input defaultValue="Admin User" readOnly /></div></div>
-                <div className="fgroup"><label>Change Password (Coming Soon)</label><input type="password" placeholder="••••••••" disabled /></div>
-                <button className="btnprimary" style={{marginTop:'8px', opacity: 0.5, cursor: 'not-allowed'}}>Save Changes</button>
-                <div style={{marginTop:'32px',paddingTop:'32px',borderTop:'1px solid var(--border)'}}>
+                <div className="fr2">
+                  <div className="fgroup">
+                    <label>Email Address</label>
+                    <input value={profileForm.email} onChange={e=>setProfileForm(p=>({...p,email:e.target.value}))} placeholder="admin@rewajcorporate.com" />
+                  </div>
+                  <div className="fgroup">
+                    <label>Full Name</label>
+                    <input value={profileForm.full_name} onChange={e=>setProfileForm(p=>({...p,full_name:e.target.value}))} placeholder="Admin User" />
+                  </div>
+                </div>
+                <button className="btnprimary" style={{marginTop:'16px'}} onClick={updateProfile} disabled={savingProfile}>
+                  {savingProfile ? 'Saving...' : 'Update Profile'}
+                </button>
+
+                <div style={{marginTop:'40px',paddingTop:'40px',borderTop:'1px solid var(--border)'}}>
+                  <h3 style={{fontFamily:'var(--font-display)',fontSize:'18px',fontWeight:800,marginBottom:'20px',color:'var(--text-heading)'}}>Change Password</h3>
+                  <div className="fgroup" style={{marginBottom:'16px'}}>
+                    <label>Current Password</label>
+                    <input type="password" value={passwordForm.old_password} onChange={e=>setPasswordForm(p=>({...p,old_password:e.target.value}))} placeholder="••••••••" />
+                  </div>
+                  <div className="fr2">
+                    <div className="fgroup">
+                      <label>New Password</label>
+                      <input type="password" value={passwordForm.new_password} onChange={e=>setPasswordForm(p=>({...p,new_password:e.target.value}))} placeholder="••••••••" />
+                    </div>
+                    <div className="fgroup">
+                      <label>Confirm New Password</label>
+                      <input type="password" value={passwordForm.confirm_password} onChange={e=>setPasswordForm(p=>({...p,confirm_password:e.target.value}))} placeholder="••••••••" />
+                    </div>
+                  </div>
+                  <button className="btnprimary" style={{marginTop:'16px'}} onClick={changePassword} disabled={changingPass}>
+                    {changingPass ? 'Checking...' : 'Change Password'}
+                  </button>
+                </div>
+
+                <div style={{marginTop:'40px',paddingTop:'40px',borderTop:'1px solid var(--border)'}}>
                   <h3 style={{fontFamily:'var(--font-display)',fontSize:'18px',fontWeight:800,marginBottom:'16px',color:'#EF4444'}}>Danger Zone</h3>
                   <button onClick={logout} style={{background:'none',border:'1.5px solid #EF4444',color:'#EF4444',padding:'10px 24px',borderRadius:'4px',fontWeight:600,cursor:'pointer',fontSize:'14px',transition:'all 0.2s'}}>Sign Out</button>
                 </div>

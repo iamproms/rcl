@@ -11,7 +11,7 @@ from app.core.security import get_current_admin
 from app.models.content import ContactSubmission, Service, NewsletterSubscription
 from app.models.blog_project import BlogPost, Project
 from app.models.user import User
-from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterSend
+from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterSend, UserResponse, ProfileUpdate, PasswordChange
 from app.core.config import settings
 
 router = APIRouter()
@@ -198,3 +198,36 @@ async def send_newsletter(
     await send_bulk_newsletter(subscribers, subject, content)
     
     return {"message": f"Newsletter sent to {len(subscribers)} subscribers"}
+
+@router.get("/profile", response_model=UserResponse)
+async def get_profile(admin: User = Depends(get_current_admin)):
+    return admin
+
+@router.patch("/profile", response_model=UserResponse)
+async def update_profile(
+    profile_in: ProfileUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    update_data = profile_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(admin, field, value)
+    
+    await db.commit()
+    await db.refresh(admin)
+    return admin
+
+@router.patch("/profile/password")
+async def change_password(
+    password_in: PasswordChange,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    from app.core.security import verify_password, hash_password
+    
+    if not verify_password(password_in.old_password, admin.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect old password")
+    
+    admin.hashed_password = hash_password(password_in.new_password)
+    await db.commit()
+    return {"message": "Password updated successfully"}

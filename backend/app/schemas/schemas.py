@@ -37,6 +37,24 @@ class TokenResponse(BaseModel):
     user_email: str
     user_name: Optional[str]
 
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    full_name: str
+    is_active: bool
+    is_admin: bool
+    
+    class Config:
+        from_attributes = True
+
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, min_length=2, max_length=255)
+    email: Optional[EmailStr] = None
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str = Field(..., min_length=6)
+
 
 # --- Services ---
 class ServiceCreate(BaseModel):

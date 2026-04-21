@@ -53,6 +53,14 @@ export default function CareersPage() {
       setErrorMsg("CV must be a PDF file.");
       return;
     }
+    if (cvFile.size > 5 * 1024 * 1024) {
+      setErrorMsg("CV file size must be less than 5MB.");
+      return;
+    }
+    if (certFile && certFile.size > 5 * 1024 * 1024) {
+      setErrorMsg("Certification file size must be less than 5MB.");
+      return;
+    }
     
     setIsSubmitting(true);
     setErrorMsg('');
@@ -356,11 +364,40 @@ export default function CareersPage() {
                       <div className="form-row-2">
                         <div className="form-group">
                           <label>Upload CV (PDF, Max 5MB) *</label>
-                          <input type="file" accept=".pdf" required onChange={(e: any) => setCvFile(e.target.files[0])} style={{ padding: '8px' }} />
+                          <input 
+                            type="file" 
+                            accept=".pdf" 
+                            required 
+                            onChange={(e: any) => {
+                              const file = e.target.files[0];
+                              if (file && file.size > 5 * 1024 * 1024) {
+                                alert("File is too large. Max size is 5MB.");
+                                e.target.value = null;
+                                setCvFile(null);
+                              } else {
+                                setCvFile(file);
+                              }
+                            }} 
+                            style={{ padding: '8px' }} 
+                          />
                         </div>
                         <div className="form-group">
-                          <label>Relevant Certifications (PDF)</label>
-                          <input type="file" accept=".pdf" onChange={(e: any) => setCertFile(e.target.files[0])} style={{ padding: '8px' }} />
+                          <label>Relevant Certifications (PDF, Max 5MB)</label>
+                          <input 
+                            type="file" 
+                            accept=".pdf" 
+                            onChange={(e: any) => {
+                              const file = e.target.files[0];
+                              if (file && file.size > 5 * 1024 * 1024) {
+                                alert("File is too large. Max size is 5MB.");
+                                e.target.value = null;
+                                setCertFile(null);
+                              } else {
+                                setCertFile(file);
+                              }
+                            }} 
+                            style={{ padding: '8px' }} 
+                          />
                         </div>
                       </div>
 

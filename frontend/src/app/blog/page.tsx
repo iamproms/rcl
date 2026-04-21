@@ -108,10 +108,18 @@ export default function BlogPage() {
     <>
       <Navbar />
       <main style={{ paddingTop:'72px', background:'var(--white)' }}>
-        <section className="blog-header">
-          <div className="container">
-            <h1 className="blog-title">Industry Insights</h1>
-            <p className="blog-sub">Expert analysis and updates on the Nigerian energy sector, engineering innovations, and global oil and gas trends.</p>
+        <section className="blog-header" style={{
+          position: 'relative',
+          padding: '100px 0',
+          background: 'url(/images/blog-featured.jpg) center/cover no-repeat',
+          textAlign: 'center',
+          color: 'white',
+          borderBottom: '4px solid var(--red)'
+        }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 0 }} />
+          <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+            <h1 className="blog-title" style={{ color: 'white', marginBottom: '16px' }}>Industry Insights</h1>
+            <p className="blog-sub" style={{ color: 'rgba(255,255,255,0.8)', margin: '0 auto' }}>Expert analysis and updates on the Nigerian energy sector, engineering innovations, and global oil and gas trends.</p>
           </div>
         </section>
         <section className="blog-content">

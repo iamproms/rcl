@@ -43,9 +43,22 @@ export default function ContactPage() {
       <main style={{ paddingTop: '72px' }}>
         <div className="contact-page-wrap">
           <div className="container">
-            <div className="contact-header">
-              <h1 className="contact-title">Get in Touch</h1>
-              <p className="contact-sub">Partner with Nigeria&apos;s leading oil and gas engineering services provider. We are ready to assist with your technical needs and service consultations.</p>
+            <div className="contact-header" style={{
+              position: 'relative',
+              padding: '100px 0',
+              background: 'url(/images/team-offshore.jpg) center/cover no-repeat',
+              textAlign: 'center',
+              color: 'white',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              marginBottom: '56px',
+              borderBottom: '4px solid var(--red)'
+            }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.85)', zIndex: 0 }} />
+              <div style={{ position: 'relative', zIndex: 1, padding: '0 24px' }}>
+                <h1 className="contact-title" style={{ color: 'white', marginBottom: '16px' }}>Get in Touch</h1>
+                <p className="contact-sub" style={{ color: 'rgba(255,255,255,0.8)', margin: '0 auto', maxWidth: '650px' }}>Partner with Nigeria&apos;s leading oil and gas engineering services provider. We are ready to assist with your technical needs and service consultations.</p>
+              </div>
             </div>
             <div className="contact-grid">
               {/* Left */}

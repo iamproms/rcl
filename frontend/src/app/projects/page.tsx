@@ -49,6 +49,7 @@ const tagColors: Record<string, string> = {
 export default function ProjectsPage() {
   const [active, setActive] = useState('All Projects');
   const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
     async function loadProjects() {
@@ -106,7 +107,10 @@ export default function ProjectsPage() {
                 <button
                   key={cat}
                   className={`filter-tab${active === cat ? ' active' : ''}`}
-                  onClick={() => setActive(cat)}
+                  onClick={() => {
+                    setActive(cat);
+                    setVisibleCount(6); // Reset pagination on category change
+                  }}
                 >
                   {cat}
                 </button>
@@ -119,7 +123,7 @@ export default function ProjectsPage() {
         <section className="projects-section">
           <div className="container">
             <div className="projects-grid">
-              {filtered.map(project => {
+              {filtered.slice(0, visibleCount).map(project => {
                 const statusLabel = project.status === 'executed' ? 'Completed' : 'On-going';
                 return (
                   <Link key={project.id} href={`/projects/${project.slug}`} className="project-card">
@@ -141,9 +145,16 @@ export default function ProjectsPage() {
               })}
             </div>
 
-            <div className="load-more">
-              <button className="load-more-btn">Load More Projects ↓</button>
-            </div>
+            {filtered.length > visibleCount && (
+              <div className="load-more">
+                <button 
+                  className="load-more-btn"
+                  onClick={() => setVisibleCount(prev => prev + 6)}
+                >
+                  Load More Projects ↓
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -172,8 +183,8 @@ export default function ProjectsPage() {
         </section>
 
         {/* CTA */}
-        <section className="projects-cta">
-          <div className="projects-cta__bg" />
+        <section className="projects-cta" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="projects-cta__bg" style={{ opacity: 0.25, background: 'url(/images/team-offshore.jpg) center/cover' }} />
           <div className="container projects-cta__inner">
             <h2 className="projects-cta__title">Ready to start your next project with us?</h2>
             <br />

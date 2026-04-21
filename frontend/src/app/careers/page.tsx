@@ -248,9 +248,17 @@ export default function CareersPage() {
         </section>
 
         {/* Stay Informed Talent Pool */}
-        <section style={{ padding: '80px 0', background: 'var(--navy)', textAlign: 'center' }}>
-          <div className="container">
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 800, color: 'var(--white)', marginBottom: '16px' }}>Join our Talent Pool</h2>
+        <section style={{ 
+            position: 'relative', 
+            padding: '100px 0', 
+            background: 'url(/images/team-offshore.jpg) center/cover no-repeat', 
+            textAlign: 'center',
+            overflow: 'hidden',
+            borderTop: '1px solid rgba(255,255,255,0.1)'
+          }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.9)', zIndex: 0 }} />
+          <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 800, color: 'var(--white)', marginBottom: '16px', textTransform: 'uppercase' }}>Join our Talent Pool</h2>
             <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.7)', maxWidth: '500px', margin: '0 auto 32px' }}>
               Didn&apos;t find a role today? Send us your CV for future considerations.
             </p>

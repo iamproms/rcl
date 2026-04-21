@@ -13,6 +13,7 @@ from app.models.job import Job, JobApplication, JobStatus
 from app.schemas.schemas import JobResponse, JobApplicationResponse, JobCreate, JobUpdate
 from app.models.user import User
 from app.core.upload import upload_to_cloudinary, save_local_file
+from app.core.email import send_career_notification
 
 router = APIRouter()
 
@@ -108,6 +109,17 @@ async def apply_to_job(
     db.add(application)
     await db.commit()
     await db.refresh(application)
+    
+    # Notify admin
+    try:
+        job_title = job.title if job else "Talent Pool Submission"
+        await send_career_notification(
+            application_name=full_name,
+            application_email=email,
+            job_title=job_title
+        )
+    except Exception as e:
+        print(f"Error triggering career notification: {e}")
     
     return application
 

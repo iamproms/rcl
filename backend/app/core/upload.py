@@ -63,6 +63,8 @@ async def upload_to_cloudinary(file: UploadFile, folder: str = "rcl-uploads", re
                 tmp_path,
                 folder=folder,
                 resource_type=final_resource_type,
+                type="upload",
+                access_mode="public",
                 use_filename=True,
                 unique_filename=True
             )

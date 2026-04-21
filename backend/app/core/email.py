@@ -89,3 +89,34 @@ async def send_bulk_newsletter(subscribers, subject: str, content: str):
             sg.send(message)
         except Exception as e:
             print(f"Error sending newsletter to {subscriber.email}: {e}")
+
+async def send_career_notification(application_name: str, application_email: str, job_title: str):
+    if not settings.SENDGRID_API_KEY:
+        return
+    
+    message_text = f"""
+    New Job Application Received:
+    
+    Name: {application_name}
+    Email: {application_email}
+    Subject Job: {job_title}
+    
+    Please log in to the admin dashboard to review the CV and certifications.
+    https://rewajcorporate.com/admin/careers/applications
+    
+    ---
+    This email was sent automatically from Rewaj Corporate Limited portal.
+    """
+    
+    message = Mail(
+        from_email=settings.FROM_EMAIL,
+        to_emails="careers@rewajcorporate.com", 
+        subject=f"New Application: {job_title} - {application_name}",
+        plain_text_content=message_text
+    )
+    
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
+    except Exception as e:
+        print(f"Error sending career notification email: {e}")

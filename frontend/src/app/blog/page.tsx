@@ -111,7 +111,7 @@ export default function BlogPage() {
         <section className="blog-header" style={{
           position: 'relative',
           padding: '100px 0',
-          background: 'url(/images/blog-featured.jpg) center/cover no-repeat',
+          background: 'url(/images/Blog-hero.jpeg) center/cover no-repeat',
           textAlign: 'center',
           color: 'white',
           borderBottom: '4px solid var(--red)'

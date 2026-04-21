@@ -184,7 +184,7 @@ export default function ProjectsPage() {
 
         {/* CTA */}
         <section className="projects-cta" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="projects-cta__bg" style={{ opacity: 0.25, background: 'url(/images/team-offshore.jpg) center/cover' }} />
+          <div className="projects-cta__bg" style={{ opacity: 0.25, background: 'url(/images/project-cta-image.jpeg) center/cover' }} />
           <div className="container projects-cta__inner">
             <h2 className="projects-cta__title">Ready to start your next project with us?</h2>
             <br />

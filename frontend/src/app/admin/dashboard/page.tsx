@@ -64,6 +64,21 @@ export default function AdminDashboard() {
     return `${apiBase}${normalizedUrl}`;
   };
 
+  const stripTags = (html: string) => {
+    if (!html) return '';
+    // Replace <p> tags with newlines, remove others
+    return html.replace(/<p>/gi, '').replace(/<\/p>/gi, '\n').replace(/<br\s*\/?>/gi, '\n').trim();
+  };
+
+  const wrapTags = (text: string) => {
+    if (!text) return '';
+    return text.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => line.startsWith('<') ? line : `<p>${line}</p>`)
+      .join('');
+  };
+
   const fetchData = useCallback(async () => {
     const tkn = typeof window !== 'undefined' ? localStorage.getItem('rcl_token') : null;
     if (!tkn) { router.push('/admin'); return; }
@@ -316,7 +331,7 @@ export default function AdminDashboard() {
           title: articleForm.title,
           slug,
           excerpt: articleForm.excerpt,
-          content: articleForm.content,
+          content: wrapTags(articleForm.content),
           author: articleForm.author,
           category: articleForm.category || 'General',
           featured_image: articleForm.articleImage,
@@ -395,7 +410,7 @@ export default function AdminDashboard() {
         setArticleForm({
           title: fullArticle.title,
           category: fullArticle.category || '',
-          content: fullArticle.content || '',
+          content: stripTags(fullArticle.content || ''),
           excerpt: fullArticle.excerpt || '',
           articleImage: fullArticle.featured_image || '',
           author: fullArticle.author || '',

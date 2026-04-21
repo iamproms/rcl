@@ -408,9 +408,10 @@ body, body * { text-transform: none !important; }
 .proj-detail-info-item span { color: var(--navy); font-size: 15px; font-weight: 600; }
 
 @media (max-width: 991px) {
-  .proj-detail-layout { grid-template-columns: 1fr; gap: 48px; }
+  .proj-detail-layout { grid-template-columns: 1fr; gap: 40px; padding: 40px 16px; }
   .proj-detail-sidebar { position: static; }
-  .proj-detail-title { font-size: 36px; }
+  .proj-detail-title { font-size: 32px; }
+  .proj-detail-hero { padding: 100px 16px 60px; min-height: 400px; }
 }
 
 @media (max-width: 1024px) { .projects-grid { grid-template-columns: repeat(2,1fr); } }

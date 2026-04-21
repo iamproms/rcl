@@ -145,14 +145,25 @@ export default function ProjectsPage() {
               })}
             </div>
 
-            {filtered.length > visibleCount && (
-              <div className="load-more">
-                <button 
-                  className="load-more-btn"
-                  onClick={() => setVisibleCount(prev => prev + 6)}
-                >
-                  Load More Projects ↓
-                </button>
+            {(filtered.length > visibleCount || visibleCount > 6) && (
+              <div className="load-more" style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                {filtered.length > visibleCount && (
+                  <button 
+                    className="load-more-btn"
+                    onClick={() => setVisibleCount(prev => prev + 6)}
+                  >
+                    Load More Projects ↓
+                  </button>
+                )}
+                {visibleCount > 6 && (
+                  <button 
+                    className="load-more-btn"
+                    onClick={() => setVisibleCount(6)}
+                    style={{ borderColor: 'var(--slate-300)' }}
+                  >
+                    See Less ↑
+                  </button>
+                )}
               </div>
             )}
           </div>

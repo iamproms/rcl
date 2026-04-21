@@ -176,3 +176,20 @@ async def change_password(
     admin.hashed_password = hash_password(password_in.new_password)
     await db.commit()
     return {"message": "Password updated successfully"}
+
+@router.get("/check-storage")
+async def check_storage(admin: User = Depends(get_current_admin)):
+    """Diagnostic endpoint to check if Cloudinary is configured and static folders exist."""
+    cloudinary_url = getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")
+    has_cloudinary = bool(cloudinary_url)
+    
+    upload_dir = "static/uploads/resumes"
+    exists = os.path.exists(upload_dir)
+    
+    return {
+        "cloudinary_configured": has_cloudinary,
+        "cloudinary_url_prefix": cloudinary_url[:20] + "..." if has_cloudinary else None,
+        "local_upload_dir_exists": exists,
+        "cwd": os.getcwd(),
+        "static_files_present": os.listdir("static/uploads") if os.path.exists("static/uploads") else []
+    }

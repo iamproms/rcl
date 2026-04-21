@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const [passwordForm, setPasswordForm] = useState({old_password:'',new_password:'',confirm_password:''});
   const [savingProfile, setSavingProfile] = useState(false);
   const [changingPass, setChangingPass] = useState(false);
+  const [lastSeenAppId, setLastSeenAppId] = useState<number>(0);
 
   const token = () => typeof window!=='undefined' ? localStorage.getItem('rcl_token') : null;
   const userEmail = () => typeof window!=='undefined' ? localStorage.getItem('rcl_user') : '';
@@ -78,6 +79,23 @@ export default function AdminDashboard() {
       .map(line => line.startsWith('<') ? line : `<p>${line}</p>`)
       .join('');
   };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('rcl_last_seen_app_id');
+      if (stored) setLastSeenAppId(parseInt(stored));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeNav === 'Jobs' && applications.length > 0) {
+      const currentMax = Math.max(...applications.map(a => a.id));
+      if (currentMax > lastSeenAppId) {
+        setLastSeenAppId(currentMax);
+        localStorage.setItem('rcl_last_seen_app_id', currentMax.toString());
+      }
+    }
+  }, [activeNav, applications, lastSeenAppId]);
 
   const fetchData = useCallback(async () => {
     const tkn = typeof window !== 'undefined' ? localStorage.getItem('rcl_token') : null;
@@ -585,7 +603,7 @@ export default function AdminDashboard() {
 
   const navItems = [
     {icon:'📊',label:'Dashboard'},{icon:'🔍',label:'Search'},{icon:'📝',label:'Articles'},{icon:'🏗️',label:'Projects'},
-    {icon:'💼',label:'Jobs',badge:applications.length},{icon:'✉️',label:'Inbox',badge:stats?.unread_messages},{icon:'📧',label:'Newsletter'},{icon:'⚙️',label:'Settings'},
+    {icon:'💼',label:'Jobs',badge:applications.filter(a => a.id > lastSeenAppId).length},{icon:'✉️',label:'Inbox',badge:stats?.unread_messages},{icon:'📧',label:'Newsletter'},{icon:'⚙️',label:'Settings'},
   ];
 
   if(loading) return (

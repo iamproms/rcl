@@ -12,6 +12,7 @@ from app.core.security import get_current_admin
 from app.models.job import Job, JobApplication, JobStatus
 from app.schemas.schemas import JobResponse, JobApplicationResponse, JobCreate, JobUpdate
 from app.models.user import User
+from app.core.upload import upload_to_cloudinary, save_local_file
 
 router = APIRouter()
 
@@ -69,22 +70,25 @@ async def apply_to_job(
     if not cv_file.filename.endswith('.pdf'):
          raise HTTPException(status_code=400, detail="CV must be a PDF file.")
          
-    # Save CV
-    cv_filename = f"{uuid4()}_{cv_file.filename}"
-    cv_path = os.path.join(UPLOAD_DIR, cv_filename)
-    with open(cv_path, "wb") as buffer:
-        shutil.copyfileobj(cv_file.file, buffer)
+    # Save CV using Cloudinary (preferred) or local fallback
+    cv_url = await upload_to_cloudinary(cv_file, folder="resumes", resource_type="raw")
+    if not cv_url:
+        # Local fallback
+        await cv_file.seek(0)
+        content = await cv_file.read()
+        cv_url = save_local_file(content, cv_file.filename, "static/uploads/resumes")
         
     # Save Cert
-    cert_path = None
+    cert_url = None
     if cert_file:
         if not cert_file.filename.endswith('.pdf'):
             raise HTTPException(status_code=400, detail="Certifications must be a PDF file.")
-        cert_filename = f"{uuid4()}_{cert_file.filename}"
-        cert_path_full = os.path.join(UPLOAD_DIR, cert_filename)
-        with open(cert_path_full, "wb") as buffer:
-            shutil.copyfileobj(cert_file.file, buffer)
-        cert_path = cert_path_full
+        
+        cert_url = await upload_to_cloudinary(cert_file, folder="resumes", resource_type="raw")
+        if not cert_url:
+            await cert_file.seek(0)
+            content = await cert_file.read()
+            cert_url = save_local_file(content, cert_file.filename, "static/uploads/resumes")
 
     application = JobApplication(
         job_id=job_id if job_id != 0 else None,
@@ -98,8 +102,8 @@ async def apply_to_job(
         institution=institution,
         course_of_study=course_of_study,
         nysc_status=nysc_status,
-        cv_path=cv_path,
-        certifications_path=cert_path
+        cv_path=cv_url,
+        certifications_path=cert_url
     )
     db.add(application)
     await db.commit()

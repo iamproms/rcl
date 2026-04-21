@@ -13,6 +13,7 @@ from app.models.blog_project import BlogPost, Project
 from app.models.user import User
 from app.schemas.schemas import ContactResponse, AdminStats, NewsletterCreate, NewsletterSend, UserResponse, ProfileUpdate, PasswordChange
 from app.core.config import settings
+from app.core.upload import upload_to_cloudinary, save_local_file
 
 router = APIRouter()
 
@@ -91,75 +92,19 @@ async def upload_file(
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image files are allowed")
 
-    cloudinary_url = getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")
+    url = await upload_to_cloudinary(file, folder="rcl-uploads", resource_type="image")
+    if not url:
+        # Fallback to local
+        await file.seek(0)
+        content = await file.read()
+        url = save_local_file(content, file.filename, "static/uploads")
+        # Ensure base URL is prepended if not already
+        if not url.startswith("http"):
+            base_url = getattr(settings, "BASE_URL", "").rstrip("/")
+            if base_url:
+                url = f"{base_url}{url}"
     
-    # Auto-fix common Render copy-paste error: "CLOUDINARY_URL=cloudinary://..."
-    if cloudinary_url.startswith("CLOUDINARY_URL="):
-        cloudinary_url = cloudinary_url.replace("CLOUDINARY_URL=", "", 1)
-
-    if cloudinary_url:
-        # ── Cloudinary upload (persistent) ──
-        # Parse cloudinary://api_key:api_secret@cloud_name
-        try:
-            import cloudinary
-            import cloudinary.uploader
-            import tempfile
-            import os as base_os
-            
-            # Parse credentials from URL safely
-            import re
-            match = re.search(r"cloudinary://([^:]+):([^@]+)@([^/?#\s]+)", cloudinary_url)
-            if not match:
-                print(f"FAILED TO PARSE CLOUDINARY_URL: {cloudinary_url}")
-                raise HTTPException(status_code=500, detail="Malformed CLOUDINARY_URL")
-            
-            api_key = match.group(1)
-            api_secret = match.group(2)
-            cloud_name = match.group(3).strip("/")  # Ensure no trailing slash
-            
-            print(f"DEBUG: Configured Cloudinary for {cloud_name}")
-            cloudinary.config(
-                cloud_name=cloud_name,
-                api_key=api_key,
-                api_secret=api_secret,
-                secure=True,
-            )
-            
-            # Use a robust temp file to avoid BytesIO interface issues with Cloudinary SDK
-            content = await file.read()
-            fd, temp_path = tempfile.mkstemp(suffix=base_os.path.splitext(file.filename)[1])
-            try:
-                with base_os.fdopen(fd, 'wb') as temp_file:
-                    temp_file.write(content)
-                    
-                result = cloudinary.uploader.upload(
-                    temp_path,
-                    folder="rcl-uploads",
-                    resource_type="image",
-                )
-                return {"url": result["secure_url"]}
-            finally:
-                if base_os.path.exists(temp_path):
-                    base_os.remove(temp_path)
-            
-        except Exception as e:
-            import traceback
-            print("CLOUDINARY ERROR TRACEBACK:")
-            traceback.print_exc()
-            raise HTTPException(status_code=500, detail=f"Cloudinary Error: {str(e)}")
-    else:
-        # ── Local disk fallback (dev only) ──
-        upload_dir = "static/uploads"
-        os.makedirs(upload_dir, exist_ok=True)
-        file_extension = os.path.splitext(file.filename)[1]
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
-        file_path = os.path.join(upload_dir, unique_filename)
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
-        base_url = getattr(settings, "BASE_URL", "").rstrip("/")
-        file_url = f"{base_url}/static/uploads/{unique_filename}" if base_url else f"/static/uploads/{unique_filename}"
-        return {"url": file_url}
+    return {"url": url}
 
 
 @router.get("/subscribers")

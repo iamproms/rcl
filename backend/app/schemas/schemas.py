@@ -152,7 +152,7 @@ class JobResponse(JobBase):
 class JobApplicationCreate(BaseModel):
     job_id: Optional[int] = None
     full_name: str = Field(..., max_length=255)
-    email: EmailStr
+    email: str
     phone: str = Field(..., max_length=50)
     dob: date
     gender: str = Field(..., max_length=50)

@@ -180,14 +180,44 @@ async def change_password(
 @router.get("/check-storage")
 async def check_storage():
     """Diagnostic endpoint to check if Cloudinary is configured and static folders exist."""
+    import cloudinary.uploader
+    import tempfile
+    
     cloudinary_url = getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")
     has_cloudinary = bool(cloudinary_url)
+    
+    test_upload_result = "N/A"
+    test_error = None
+    
+    if has_cloudinary:
+        try:
+            # Clean up prefix if present
+            c_url = cloudinary_url.replace("CLOUDINARY_URL=", "")
+            cloudinary.config(cloudinary_url=c_url)
+            
+            # Create a tiny test file
+            with tempfile.NamedTemporaryFile(suffix=".txt", mode="w+", delete=False) as tmp:
+                tmp.write("Cloudinary Test File")
+                tmp_path = tmp.name
+            
+            try:
+                res = cloudinary.uploader.upload(tmp_path, folder="test", resource_type="auto")
+                test_upload_result = f"SUCCESS: {res.get('secure_url')}"
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                    
+        except Exception as e:
+            test_upload_result = "FAILED"
+            test_error = str(e)
     
     upload_dir = "static/uploads/resumes"
     exists = os.path.exists(upload_dir)
     
     return {
         "cloudinary_configured": has_cloudinary,
+        "cloudinary_test_upload": test_upload_result,
+        "cloudinary_error": test_error,
         "cloudinary_url_prefix": cloudinary_url[:20] + "..." if has_cloudinary else None,
         "local_upload_dir_exists": exists,
         "cwd": os.getcwd(),

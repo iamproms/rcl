@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
   const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});
-  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});
+  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
@@ -113,6 +113,25 @@ export default function AdminDashboard() {
     if(!confirm('Delete this project?')) return;
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/projects/${id}`,{method:'DELETE',headers:hdrs()});
     setProjects(prev=>prev.filter(p=>p.id!==id));
+  };
+
+  const updateArticleStatus = async (id: number, published: boolean) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog/${id}`, {
+        method: 'PUT',
+        headers: hdrs(),
+        body: JSON.stringify({ is_published: published })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setArticles(prev => prev.map(a => a.id === id ? { ...a, is_published: updated.is_published } : a));
+        setNotification(`Article ${published ? 'published' : 'moved to draft'}!`);
+        setTimeout(() => setNotification(''), 3000);
+      }
+    } catch (e) {
+      setNotification('Error updating article status');
+      setTimeout(() => setNotification(''), 3000);
+    }
   };
 
   const updateProjectStatus = async (id: number, newStatus: string) => {
@@ -269,6 +288,10 @@ export default function AdminDashboard() {
     } catch(e){}
   };
 
+  const createArticleStatus = async (id: number, published: boolean) => {
+    // This is handled via the edit function or updateArticleStatus
+  };
+
   const editJob = (job: Job) => {
     setJobForm({
       title: job.title, department: job.department, location: job.location, job_type: job.job_type,
@@ -297,7 +320,7 @@ export default function AdminDashboard() {
           author: articleForm.author,
           category: articleForm.category || 'General',
           featured_image: articleForm.articleImage,
-          is_published: false
+          is_published: articleForm.is_published
         })
       });
       if(res.ok){
@@ -309,7 +332,7 @@ export default function AdminDashboard() {
           setArticles(prev=>[updatedArticle,...prev]);
           setNotification('Article created successfully!');
         }
-        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});
+        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});
         setShowArticleForm(false);
         setEditingArticle(null);
         setTimeout(()=>setNotification(''),3000);
@@ -377,7 +400,8 @@ export default function AdminDashboard() {
           articleImage: fullArticle.featured_image || '',
           author: fullArticle.author || '',
           slug: fullArticle.slug || '',
-          date: ''
+          date: '',
+          is_published: fullArticle.is_published || false
         });
         setEditingArticle(article);
         setShowArticleForm(true);
@@ -771,9 +795,20 @@ export default function AdminDashboard() {
                     )}
                   </div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Content</label><textarea value={articleForm.content} onChange={e=>setArticleForm(p=>({...p,content:e.target.value}))} placeholder="Article content" rows={6} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}>
+                    <label>Status</label>
+                    <select 
+                      value={articleForm.is_published ? 'Published' : 'Draft'} 
+                      onChange={e => setArticleForm(p => ({ ...p, is_published: e.target.value === 'Published' }))}
+                      style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}
+                    >
+                      <option value="Draft">Draft</option>
+                      <option value="Published">Published</option>
+                    </select>
+                  </div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createArticle}>{editingArticle ? 'Update Article' : 'Create Article'}</button>
-                    <button onClick={()=>{setShowArticleForm(false);setEditingArticle(null);setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                    <button onClick={()=>{setShowArticleForm(false);setEditingArticle(null);setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
                   </div>
                 </div>
               )}
@@ -785,7 +820,17 @@ export default function AdminDashboard() {
                       <tr key={a.id}>
                         <td><p className="atitle">{a.title}</p></td>
                         <td><span className="cpill">{a.category}</span></td>
-                        <td><span className={`spill spill--${a.is_published?'pub':'draft'}`}>● {a.is_published?'Published':'Draft'}</span></td>
+                        <td>
+                          <select 
+                            value={a.is_published ? 'Published' : 'Draft'} 
+                            onChange={(e) => updateArticleStatus(a.id, e.target.value === 'Published')}
+                            className={`spill spill--${a.is_published?'pub':'draft'}`}
+                            style={{ border: 'none', cursor: 'pointer', outline: 'none', padding: '4px 8px' }}
+                          >
+                            <option value="Draft">Draft</option>
+                            <option value="Published">Published</option>
+                          </select>
+                        </td>
                         <td style={{fontSize:'13px',color:'#94A3B8'}}>{new Date(a.created_at).toLocaleDateString()}</td>
                         <td><button className="dicon" onClick={()=>editArticle(a)}>✏️</button><button className="dicon" onClick={()=>deleteArticle(a.id)}>🗑</button></td>
                       </tr>

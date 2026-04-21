@@ -194,10 +194,12 @@ export default async function ProjectPage({ params }: { params: { slug: string }
 
         <section className="cta-section">
           <div className="container">
-            <div className="cta-content">
-              <h2>Ready to Start Your Project?</h2>
-              <p>Let's discuss how we can help bring your vision to life.</p>
-              <Link href="/contact" className="btn-primary">Get In Touch</Link>
+            <div className="cta-card">
+              <div className="cta-card__content">
+                <h2 className="cta-card__title">Ready to Start Your Project?</h2>
+                <p className="cta-card__text">Let's discuss how we can help bring your vision to life and deliver the operational excellence your facility deserves.</p>
+                <Link href="/contact" className="btn-primary">Get In Touch</Link>
+              </div>
             </div>
           </div>
         </section>

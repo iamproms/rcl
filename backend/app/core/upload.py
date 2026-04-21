@@ -51,11 +51,18 @@ async def upload_to_cloudinary(file: UploadFile, folder: str = "rcl-uploads", re
             tmp_path = tmp.name
             
         try:
-            print(f"DEBUG: Attempting Cloudinary upload for {file.filename} (resource_type={resource_type})")
+            # Detect resource type
+            suffix = os.path.splitext(file.filename)[1].lower()
+            if suffix == '.pdf':
+                final_resource_type = "raw"
+            else:
+                final_resource_type = resource_type # Default auto
+                
+            print(f"DEBUG: Attempting Cloudinary upload for {file.filename} (final_resource_type={final_resource_type})")
             result = cloudinary.uploader.upload(
                 tmp_path,
                 folder=folder,
-                resource_type=resource_type,
+                resource_type=final_resource_type,
                 use_filename=True,
                 unique_filename=True
             )

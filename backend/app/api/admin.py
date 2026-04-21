@@ -178,7 +178,7 @@ async def change_password(
     return {"message": "Password updated successfully"}
 
 @router.get("/check-storage")
-async def check_storage(admin: User = Depends(get_current_admin)):
+async def check_storage():
     """Diagnostic endpoint to check if Cloudinary is configured and static folders exist."""
     cloudinary_url = getattr(settings, "CLOUDINARY_URL", "") or os.environ.get("CLOUDINARY_URL", "")
     has_cloudinary = bool(cloudinary_url)

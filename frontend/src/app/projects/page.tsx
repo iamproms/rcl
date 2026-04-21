@@ -184,11 +184,13 @@ export default function ProjectsPage() {
 
         {/* CTA */}
         <section className="projects-cta" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="projects-cta__bg" style={{ opacity: 0.25, background: 'url(/images/project-cta-image.jpeg) center/cover' }} />
-          <div className="container projects-cta__inner">
-            <h2 className="projects-cta__title">Ready to start your next project with us?</h2>
+          <div className="projects-cta__bg" style={{ opacity: 0.15, background: 'url(/images/project-cta-image.jpeg) center/cover' }} />
+          <div className="container projects-cta__inner" style={{ position: 'relative', zIndex: 1 }}>
+            <h2 className="projects-cta__title" style={{ fontWeight: 800 }}>Ready to start your next project with us?</h2>
             <br />
-            <p>Our team of certified engineers is ready to provide the technical <br />expertise and operational excellence your facility deserves.</p>
+            <p style={{ color: 'white', fontSize: '18px', fontWeight: 500, lineHeight: 1.6, maxWidth: '800px', margin: '0 auto' }}>
+              Our team of certified engineers is ready to provide the technical <br className="desktop-only" /> expertise and operational excellence your facility deserves.
+            </p>
             <br />
             <br />
             <Link href="/contact" className="btn-red">Get a quote</Link>

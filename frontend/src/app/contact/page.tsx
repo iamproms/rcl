@@ -46,7 +46,7 @@ export default function ContactPage() {
             <div className="contact-header" style={{
               position: 'relative',
               padding: '100px 0',
-              background: 'url(/images/team-offshore.jpg) center/cover no-repeat',
+              background: 'url(/images/contact-us-image.jpeg) center/cover no-repeat',
               textAlign: 'center',
               color: 'white',
               borderRadius: '12px',

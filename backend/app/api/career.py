@@ -71,7 +71,7 @@ async def apply_to_job(
          raise HTTPException(status_code=400, detail="CV must be a PDF file.")
          
     # Save CV using Cloudinary (preferred) or local fallback
-    cv_url = await upload_to_cloudinary(cv_file, folder="resumes", resource_type="raw")
+    cv_url = await upload_to_cloudinary(cv_file, folder="resumes", resource_type="auto")
     if not cv_url:
         # Local fallback
         await cv_file.seek(0)

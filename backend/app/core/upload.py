@@ -51,6 +51,7 @@ async def upload_to_cloudinary(file: UploadFile, folder: str = "rcl-uploads", re
             tmp_path = tmp.name
             
         try:
+            print(f"DEBUG: Attempting Cloudinary upload for {file.filename} (resource_type={resource_type})")
             result = cloudinary.uploader.upload(
                 tmp_path,
                 folder=folder,
@@ -58,7 +59,11 @@ async def upload_to_cloudinary(file: UploadFile, folder: str = "rcl-uploads", re
                 use_filename=True,
                 unique_filename=True
             )
+            print(f"DEBUG: Cloudinary upload SUCCESS: {result.get('secure_url')}")
             return result["secure_url"]
+        except Exception as e:
+            print(f"DEBUG: Cloudinary UPLOAD FAILED for {file.filename}: {str(e)}")
+            return None
         finally:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)

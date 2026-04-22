@@ -546,11 +546,17 @@ export default function AdminDashboard() {
       });
       
       if (res.ok) {
-        setNotification('Newsletter sent successfully!');
-        setNewsletterSubject('');
-        setNewsletterContent('');
+        const data = await res.json();
+        if (data.errors && data.errors.length > 0) {
+          setNotification(`Partial success: ${data.success_count} sent. First error: ${data.errors[0]}`);
+        } else {
+          setNotification('Newsletter sent successfully!');
+          setNewsletterSubject('');
+          setNewsletterContent('');
+        }
       } else {
-        setNotification('Failed to send newsletter');
+        const errData = await res.json().catch(() => ({}));
+        setNotification(`Error: ${errData.detail || 'Submission failed'}`);
       }
     } catch (e) {
       setNotification('Error sending newsletter');

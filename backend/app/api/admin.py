@@ -140,9 +140,17 @@ async def send_newsletter(
         return {"message": "No subscribers found"}
     
     # Send newsletter to all subscribers
-    await send_bulk_newsletter(subscribers, subject, content)
+    success_count, errors = await send_bulk_newsletter(subscribers, subject, content)
     
-    return {"message": f"Newsletter sent to {len(subscribers)} subscribers"}
+    if errors:
+        return {
+            "message": f"Newsletter sent to {success_count} subscribers. {len(errors)} errors occurred.",
+            "success_count": success_count,
+            "error_count": len(errors),
+            "errors": errors[:5]  # Return first 5 errors to avoid huge payloads
+        }
+    
+    return {"message": f"Newsletter successfully sent to all {len(subscribers)} subscribers"}
 
 
 @router.post("/subscribers", response_model=NewsletterResponse)

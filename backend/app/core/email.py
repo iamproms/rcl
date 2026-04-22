@@ -74,9 +74,11 @@ async def send_newsletter_notification(subscription: NewsletterSubscription):
 
 async def send_bulk_newsletter(subscribers, subject: str, content: str):
     if not settings.SENDGRID_API_KEY:
-        return
+        return 0, ["SendGrid API Key is missing"]
     
     sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+    success_count = 0
+    errors = []
     
     for subscriber in subscribers:
         try:
@@ -86,9 +88,19 @@ async def send_bulk_newsletter(subscribers, subject: str, content: str):
                 subject=subject,
                 plain_text_content=content
             )
-            sg.send(message)
+            response = sg.send(message)
+            if response.status_code >= 200 and response.status_code < 300:
+                success_count += 1
+            else:
+                errors.append(f"SendGrid error for {subscriber.email}: Status {response.status_code}")
         except Exception as e:
-            print(f"Error sending newsletter to {subscriber.email}: {e}")
+            error_msg = str(e)
+            if hasattr(e, 'body'):
+                error_msg = f"{e} - {e.body}"
+            errors.append(f"Failed to send to {subscriber.email}: {error_msg}")
+            print(f"Error sending newsletter to {subscriber.email}: {error_msg}")
+            
+    return success_count, errors
 
 async def send_career_notification(application_name: str, application_email: str, job_title: str):
     if not settings.SENDGRID_API_KEY:

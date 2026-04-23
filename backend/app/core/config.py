@@ -35,8 +35,14 @@ class Settings(BaseSettings):
         "https://rcl-frontend-iamproms.vercel.app",
     ]
 
-    # Email (SendGrid)
+    # Email (Support both SendGrid and SMTP)
     SENDGRID_API_KEY: str = ""
+    SMTP_HOST: str = "mail.rewajcorporate.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_TLS: bool = True
+    
     FROM_EMAIL: str = "noreply@rewajcorporate.com"
     ADMIN_EMAIL: str = "info@rewajcorporate.com"
 

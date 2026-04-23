@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { Award, AlertCircle, Lightbulb, Trophy } from 'lucide-react';
 
 const reasons = [
-  { Icon: Award, title:'Local Content Excellence', desc:'Proudly Nigerian, maximizing local talent and resources for every project.' },
-  { Icon: AlertCircle, title:'Uncompromising Safety', desc:'Our "Safety First" culture ensures zero incidents and complete compliance.' },
-  { Icon: Lightbulb, title:'Innovative Solutions', desc:'We leverage the latest engineering methods and technology to deliver smarter, more efficient outcomes.' },
+  { Icon: Award, title: 'Local Content Excellence', desc: 'Proudly Nigerian, maximizing local talent and resources for every project.' },
+  { Icon: AlertCircle, title: 'Uncompromising Safety', desc: 'Our "Safety First" culture ensures zero incidents and complete compliance.' },
+  { Icon: Lightbulb, title: 'Innovative Solutions', desc: 'We leverage the latest engineering methods and technology to deliver smarter, more efficient outcomes.' },
 ];
 
 export default function WhyPartner() {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 interface Stats { total_messages: number; unread_messages: number; total_articles: number; total_projects: number; }
 interface Message { id: number; name: string; email: string; company?: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
 interface Article { id: number; title: string; slug: string; category: string; content?: string; excerpt?: string; author?: string; featured_image?: string; is_published: boolean; created_at: string; }
-interface Project { id: number; title: string; slug: string; category: string; description?: string; client_name?: string; completion_year: string; featured_image?: string; status?: string; is_active: boolean; }
+interface Project { id: number; title: string; slug: string; category: string; description?: string; full_description?: string; client_name?: string; completion_year: string; featured_image?: string; status?: string; is_active: boolean; }
 interface Job { id: number; title: string; department: string; location: string; job_type: string; summary?: string; responsibilities: string; requirements: string; qualifications: string; application_deadline: string; expiry_date?: string; internal_notes?: string; status: string; created_at: string; updated_at?: string; }
 interface JobApplication { id: number; job_id: number; full_name: string; email: string; phone: string; dob: string; gender: string; nationality: string; highest_qualification: string; institution: string; course_of_study: string; nysc_status: string; cv_path: string; certifications_path?: string; created_at: string; }
 
@@ -20,7 +20,7 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
-  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});
+  const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',full_description:'',projectImage:'',projectYear:'',category:'',tag:''});
   const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
@@ -393,6 +393,7 @@ export default function AdminDashboard() {
           category: projectForm.category,
           tag: projectForm.tag,
           description: projectForm.description,
+          full_description: projectForm.full_description,
           client_name: projectForm.client,
           completion_year: projectForm.projectYear || new Date().getFullYear().toString(),
           featured_image: projectForm.projectImage,
@@ -408,7 +409,7 @@ export default function AdminDashboard() {
           setProjects(prev=>[updatedProject,...prev]);
           setNotification('Project created successfully!');
         }
-        setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});
+        setProjectForm({title:'',client:'',description:'',full_description:'',projectImage:'',projectYear:'',category:'',tag:''});
         setShowProjectForm(false);
         setEditingProject(null);
         setTimeout(()=>setNotification(''),3000);
@@ -455,6 +456,7 @@ export default function AdminDashboard() {
           title: fullProject.title,
           client: fullProject.client_name || '',
           description: fullProject.description || '',
+          full_description: fullProject.full_description || '',
           projectImage: fullProject.featured_image || '',
           projectYear: fullProject.completion_year || '',
           category: fullProject.category || '',
@@ -937,10 +939,11 @@ export default function AdminDashboard() {
                       <div style={{marginTop:'8px', height:'100px', width:'150px', border:'1px solid #E2E8F0', borderRadius:'4px', overflow:'hidden', background:`url(${resolveImageUrl(projectForm.projectImage)}) center/cover` }} />
                     )}
                   </div>
-                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Description</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Project description" rows={4} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Summary Description (Grid)</label><textarea value={projectForm.description} onChange={e=>setProjectForm(p=>({...p,description:e.target.value}))} placeholder="Short summary for the project card" rows={3} /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Full Detailed Description</label><textarea value={projectForm.full_description} onChange={e=>setProjectForm(p=>({...p,full_description:e.target.value}))} placeholder="Full project details, scope, and technical info" rows={8} /></div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createProject}>{editingProject ? 'Update Project' : 'Create Project'}</button>
-                    <button onClick={()=>{setShowProjectForm(false);setEditingProject(null);setProjectForm({title:'',client:'',description:'',projectImage:'',projectYear:'',category:'',tag:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                    <button onClick={()=>{setShowProjectForm(false);setEditingProject(null);setProjectForm({title:'',client:'',description:'',full_description:'',projectImage:'',projectYear:'',category:'',tag:''});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
                   </div>
                 </div>
               )}

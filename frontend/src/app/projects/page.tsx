@@ -135,7 +135,11 @@ export default function ProjectsPage() {
                     </div>
                     <div className="project-card__body">
                       <h3 className="project-card__title">{project.title}</h3>
-                      <p className="project-card__desc">{project.description || project.desc || ''}</p>
+                      <p className="project-card__desc">
+                        {(project.description || project.desc || '').length > 120 
+                          ? `${(project.description || project.desc || '').substring(0, 120)}...` 
+                          : (project.description || project.desc || '')}
+                      </p>
                       <div className="project-card__footer">
                         <span className="project-card__year">🕐 {statusLabel}{project.completion_year ? ` · ${project.completion_year}` : ''}</span>
                       </div>

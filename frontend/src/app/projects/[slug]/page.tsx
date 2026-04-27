@@ -108,13 +108,13 @@ export default async function ProjectPage({ params }: { params: { slug: string }
           <div className="proj-detail-main">
             <div className="proj-detail-section">
               <h2>Project Description</h2>
-              <p>{project.full_description || project.description || 'This project demonstrates our expertise in delivering high-quality engineering solutions for the oil and gas industry.'}</p>
+              <p style={{ whiteSpace: 'pre-line' }}>{project.full_description || project.description || 'This project demonstrates our expertise in delivering high-quality engineering solutions for the oil and gas industry.'}</p>
             </div>
 
             {project.description && project.full_description && (
               <div className="proj-detail-section">
                 <h2>Scope of Work</h2>
-                <p>{project.description}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{project.description}</p>
               </div>
             )}
           </div>

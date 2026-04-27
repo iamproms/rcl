@@ -91,6 +91,7 @@ class ProjectResponse(BaseModel):
     category: Optional[str]
     tag: Optional[str]
     description: Optional[str]
+    full_description: Optional[str]
     client_name: Optional[str]
     completion_year: Optional[str]
     featured_image: Optional[str]

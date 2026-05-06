@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 interface Stats { total_messages: number; unread_messages: number; total_articles: number; total_projects: number; }
 interface Message { id: number; name: string; email: string; company?: string; phone?: string; subject?: string; message: string; is_read: boolean; created_at: string; }
-interface Article { id: number; title: string; slug: string; category: string; content?: string; excerpt?: string; author?: string; featured_image?: string; is_published: boolean; created_at: string; }
+interface Article { id: number; title: string; slug: string; category: string; content?: string; excerpt?: string; author?: string; author_role?: string; featured_image?: string; is_published: boolean; created_at: string; }
 interface Project { id: number; title: string; slug: string; category: string; description?: string; full_description?: string; client_name?: string; completion_year: string; featured_image?: string; status?: string; is_active: boolean; }
 interface Job { id: number; title: string; department: string; location: string; job_type: string; summary?: string; responsibilities: string; requirements: string; qualifications: string; application_deadline: string; expiry_date?: string; internal_notes?: string; status: string; created_at: string; updated_at?: string; }
 interface JobApplication { id: number; job_id: number; full_name: string; email: string; phone: string; dob: string; gender: string; nationality: string; highest_qualification: string; institution: string; course_of_study: string; nysc_status: string; cv_path: string; certifications_path?: string; created_at: string; }
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedMsg, setSelectedMsg] = useState<Message|null>(null);
   const [projectForm, setProjectForm] = useState({title:'',client:'',description:'',full_description:'',projectImage:'',projectYear:'',category:'',tag:''});
-  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});
+  const [articleForm, setArticleForm] = useState({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',author_role:'',slug:'',date:'', is_published: false});
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [notification, setNotification] = useState('');
@@ -352,6 +352,7 @@ export default function AdminDashboard() {
           excerpt: articleForm.excerpt,
           content: wrapTags(articleForm.content),
           author: articleForm.author,
+          author_role: articleForm.author_role,
           category: articleForm.category || 'General',
           featured_image: articleForm.articleImage,
           is_published: articleForm.is_published
@@ -366,7 +367,7 @@ export default function AdminDashboard() {
           setArticles(prev=>[updatedArticle,...prev]);
           setNotification('Article created successfully!');
         }
-        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});
+        setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',author_role:'',slug:'',date:'', is_published: false});
         setShowArticleForm(false);
         setEditingArticle(null);
         setTimeout(()=>setNotification(''),3000);
@@ -434,6 +435,7 @@ export default function AdminDashboard() {
           excerpt: fullArticle.excerpt || '',
           articleImage: fullArticle.featured_image || '',
           author: fullArticle.author || '',
+          author_role: fullArticle.author_role || '',
           slug: fullArticle.slug || '',
           date: '',
           is_published: fullArticle.is_published || false
@@ -864,6 +866,7 @@ export default function AdminDashboard() {
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Slug</label><input value={articleForm.slug} onChange={e=>setArticleForm(p=>({...p,slug:e.target.value}))} placeholder="url-friendly-slug" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Excerpt</label><textarea value={articleForm.excerpt} onChange={e=>setArticleForm(p=>({...p,excerpt:e.target.value}))} placeholder="Brief summary" rows={2} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Author</label><input value={articleForm.author} onChange={e=>setArticleForm(p=>({...p,author:e.target.value}))} placeholder="Author name" /></div>
+                  <div className="fgroup" style={{marginBottom:'12px'}}><label>Author Role</label><input value={articleForm.author_role} onChange={e=>setArticleForm(p=>({...p,author_role:e.target.value}))} placeholder="e.g., Senior Engineer, CEO, Guest Contributor" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Date</label><input type="date" value={articleForm.date} onChange={e=>setArticleForm(p=>({...p,date:e.target.value}))} /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}><label>Category</label><input value={articleForm.category} onChange={e=>setArticleForm(p=>({...p,category:e.target.value}))} placeholder="e.g. Technology, Business" /></div>
                   <div className="fgroup" style={{marginBottom:'12px'}}>
@@ -887,7 +890,7 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{display:'flex',gap:'10px'}}>
                     <button className="btnprimary" onClick={createArticle}>{editingArticle ? 'Update Article' : 'Create Article'}</button>
-                    <button onClick={()=>{setShowArticleForm(false);setEditingArticle(null);setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',slug:'',date:'', is_published: false});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
+                    <button onClick={()=>{setShowArticleForm(false);setEditingArticle(null);setArticleForm({title:'',category:'',content:'',excerpt:'',articleImage:'',author:'',author_role:'',slug:'',date:'', is_published: false});}} style={{background:'none',border:'1px solid #CBD5E1',color:'#64748B'}}>Cancel</button>
                   </div>
                 </div>
               )}

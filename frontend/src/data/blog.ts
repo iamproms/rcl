@@ -18,7 +18,7 @@ export const articles: Article[] = [
     title: 'The Role of Technology in Improving Safety and Efficiency in the Oil and Gas Industry',
     excerpt: 'The oil and gas industry has always been crucial for powering industries, transportation, and economic growth. Modern digital monitoring systems, smart sensors, and automated control technologies have fundamentally transformed how operations are conducted.',
     author: 'Asaba Oghenegoma Godspower',
-    authorRole: 'Senior Engineer, Rewaj Corporate Limited',
+    authorRole: 'Contributor, Rewaj Corporate Limited',
     image: '/images/blog-featured.jpg',
     content: `
       <p>The oil and gas industry has always been crucial for powering industries, transportation, and economic growth. In the early years of the industry, especially between the 1900s and 1970s, operations relied heavily on manual labor and basic mechanical equipment. Major companies such as Standard Oil, Royal Dutch Shell, and BP operated with limited monitoring technology compared to today.</p>
@@ -37,7 +37,7 @@ export const articles: Article[] = [
     title: 'Why Instrumentation Fittings Are Critical in Oil and Gas Operations',
     excerpt: 'The oil and gas industry operates in one of the most demanding industrial environments in the world. From offshore drilling platforms to onshore refineries and petrochemical plants, the need for reliable equipment is critical. Among the many components that ensure safe and efficient operations, instrumentation fittings and connectors play a vital role.',
     author: 'Faniyi Timilehin Esther',
-    authorRole: 'Senior Engineer, Rewaj Corporate Limited',
+    authorRole: 'Contributor, Rewaj Corporate Limited',
     image: '/images/testing-calibration.jpg',
     content: `
       <p>The oil and gas industry operates in one of the most demanding industrial environments in the world. From offshore drilling platforms to onshore refineries and petrochemical plants, the need for reliable equipment is critical. Among the many components that ensure safe and efficient operations, instrumentation fittings and connectors play a vital role.</p>

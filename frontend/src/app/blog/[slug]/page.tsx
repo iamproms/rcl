@@ -10,6 +10,7 @@ interface Article {
   excerpt?: string;
   content?: string;
   author?: string;
+  author_role?: string;
   category?: string;
   featured_image?: string;
   created_at: string;
@@ -72,7 +73,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
               <div className="author-avatar">{(article.author || 'A')[0]}</div>
               <div>
                 <span className="author-name">{article.author || 'Anonymous'}</span>
-                <span className="author-role">Senior Engineer, Rewaj Corporate Limited</span>
+                <span className="author-role">{article.author_role || 'Contributor, Rewaj Corporate Limited'}</span>
               </div>
             </div>
 

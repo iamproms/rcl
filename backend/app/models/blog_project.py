@@ -11,6 +11,7 @@ class BlogPost(Base):
     excerpt = Column(Text)
     content = Column(Text)
     author = Column(String(255))
+    author_role = Column(String(255))
     category = Column(String(100))
     featured_image = Column(String(500))
     is_published = Column(Boolean, default=False)

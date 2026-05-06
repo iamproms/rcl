@@ -27,6 +27,7 @@ class BlogPostCreate(BaseModel):
     excerpt: Optional[str] = None
     content: Optional[str] = None
     author: Optional[str] = None
+    author_role: Optional[str] = None
     category: Optional[str] = None
     featured_image: Optional[str] = None
     is_published: bool = False
@@ -37,6 +38,7 @@ class BlogPostUpdate(BaseModel):
     excerpt: Optional[str] = None
     content: Optional[str] = None
     author: Optional[str] = None
+    author_role: Optional[str] = None
     category: Optional[str] = None
     featured_image: Optional[str] = None
     is_published: Optional[bool] = None
@@ -49,6 +51,7 @@ class BlogPostResponse(BaseModel):
     excerpt: Optional[str]
     content: Optional[str]
     author: Optional[str]
+    author_role: Optional[str]
     category: Optional[str]
     featured_image: Optional[str]
     is_published: bool

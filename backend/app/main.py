@@ -34,6 +34,21 @@ async def ensure_job_id_nullable(conn):
         except Exception as e:
             print(f"Skipping job_id ALTER: {e}")
 
+async def ensure_author_role_column(conn):
+    dialect = conn.dialect.name
+    if dialect == "sqlite":
+        result = await conn.execute(text("PRAGMA table_info(blog_posts)"))
+        columns = [row[1] for row in result.fetchall()]
+    else:
+        # PostgreSQL / others
+        result = await conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = 'blog_posts'"
+        ))
+        columns = [row[0] for row in result.fetchall()]
+        
+    if 'author_role' not in columns:
+        await conn.execute(text("ALTER TABLE blog_posts ADD COLUMN author_role VARCHAR(255)"))
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create tables and run migrations on startup
@@ -41,6 +56,7 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
         await ensure_project_status_column(conn)
         await ensure_job_id_nullable(conn)
+        await ensure_author_role_column(conn)
     
     # Run seeding logic (creates admin + initial content if database is empty)
     try:
